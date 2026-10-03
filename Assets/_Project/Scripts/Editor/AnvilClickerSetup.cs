@@ -5,7 +5,8 @@ using UnityEngine;
 namespace AnvilClicker.Editor
 {
     /// <summary>
-    /// One-click (or one-command) project bootstrap. Every step is idempotent.
+    /// One-click (or one-command) project bootstrap. Every step is idempotent; the scene is only
+    /// created when missing (rebuild it with Scenes/Build Workshop Scene).
     /// Batch: unity run . -- -executeMethod AnvilClicker.Editor.AnvilClickerSetup.RunAllBatch
     /// </summary>
     public static class AnvilClickerSetup
@@ -17,7 +18,7 @@ namespace AnvilClicker.Editor
             ProjectSetup.ConfigureProject();
             PlaceholderArtGenerator.Generate();
             SampleDataGenerator.Generate();
-            WorkshopSceneBuilder.Build();
+            WorkshopSceneBuilder.BuildIfMissing();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

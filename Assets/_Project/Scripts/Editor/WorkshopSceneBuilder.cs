@@ -23,6 +23,21 @@ namespace AnvilClicker.Editor
         static readonly Color AmbientColor = new Color(0.72f, 0.68f, 0.82f);
         static readonly Color ForgeLightColor = new Color(1f, 0.55f, 0.22f);
 
+        /// <summary>
+        /// Unity assigns fresh object ids on every rebuild, so automated runs only create the scene when
+        /// it is missing; this keeps git diffs clean. Use the menu item to force a rebuild after changing this builder.
+        /// </summary>
+        public static void BuildIfMissing()
+        {
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(AnvilClickerPaths.WorkshopScene) != null)
+            {
+                Debug.Log($"[Anvil Clicker] Scene already exists at {AnvilClickerPaths.WorkshopScene}; skipped (use the Build menu to force).");
+                return;
+            }
+
+            Build();
+        }
+
         [MenuItem(AnvilClickerPaths.MenuRoot + "Scenes/Build Workshop Scene", priority = 60)]
         public static void Build()
         {

@@ -32,6 +32,7 @@ Este guia vale para sessões futuras do Claude Code e para qualquer pessoa no pr
 - Tudo que exige o Editor vira um script em `Tools/Anvil Clicker/...`, **idempotente**, com entrada batch em `AnvilClicker.Editor.AnvilClickerSetup.RunAllBatch`.
 - Se uma tarefa exigir passo manual no Editor, liste as instruções numeradas ao final.
 - **Não editar `.unity`/`.prefab`/`.asset` à mão.** Gere pelos Editor scripts.
+- A cena `Workshop` é gerada por `WorkshopSceneBuilder`. O `RunAllBatch` só a cria se ela não existir. Depois de mudar o builder, reconstrua com `-executeMethod AnvilClicker.Editor.WorkshopSceneBuilder.Build` e commite a cena.
 - Comandos (com o Editor **fechado** para este projeto):
   ```bash
   # gerar/atualizar conteúdo + checar compilação

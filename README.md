@@ -43,9 +43,11 @@ Cenas, dados de exemplo e sprites placeholder são gerados por Editor scripts, n
 | `Setup/Configure Project` | Sorting layers, eixo de ordenação 2D, input, player settings |
 | `Art/Generate Placeholder Sprites` | Gera os PNGs placeholder |
 | `Data/Generate Sample Data` | Cria os ScriptableObjects de exemplo |
-| `Scenes/Build Workshop Scene` | Monta a cena `Workshop` |
+| `Scenes/Build Workshop Scene` | Reconstrói a cena `Workshop` do zero |
 
-Todos são idempotentes: rodar de novo atualiza em vez de duplicar. Também dá para rodar em batch, com o Editor fechado:
+Todos são idempotentes: rodar de novo atualiza em vez de duplicar. O `Run All` só cria a cena se ela não existir, porque cada reconstrução gera novos IDs internos e sujaria o git. Para aplicar mudanças do builder, use o `Build Workshop Scene`.
+
+Também dá para rodar em batch, com o Editor fechado:
 
 ```bash
 unity run . -- -executeMethod AnvilClicker.Editor.AnvilClickerSetup.RunAllBatch -logFile Logs/setup.log
