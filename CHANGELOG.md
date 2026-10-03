@@ -5,6 +5,22 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), 
 
 ## [Unreleased]
 
+## [0.0.1] - 2026-10-03 — M1: Fundação e o primeiro golpe
+
 ### Added
-- Documentação inicial: GDD, arquitetura, roadmap, README, CLAUDE.md.
+- Projeto Unity 6000.3.25f1 (6.3 LTS) com URP 2D Renderer, Input System, Tilemap e Test Framework.
+- Assemblies separados: `Core` (C# puro), `Data`, `Runtime`, `Presentation`, `Editor` e `Tests.EditMode`.
+- Core:
+  - `GameState`, `Wallet` (ouro), `ForgeService` (golpe, crítico, conclusão de armas com sobra de PF) e `GameContext`;
+  - `NumberFormatter` (K, M, B… `aa`, `ab`…, notação científica, separadores pt-BR).
+- Dados em ScriptableObjects: `WeaponTypeDefinition`, `GameBalanceConfig`, `GameDatabase`.
+- `GameBootstrap` como composition root (sem singletons) e `ForgeInput`, com a ação `Forge/Strike` (mouse na bigorna ou Espaço).
+- HUD em UI Toolkit: ouro, arma atual, barra de progresso, poder do golpe e armas forjadas.
+- Feedback do golpe:
+  - faíscas, squash da bigorna, números flutuantes (com destaque no crítico) e flash da luz da forja;
+  - screen shake no crítico;
+  - sons procedurais, sem assets de áudio.
+- Ferramentas em `Tools/Anvil Clicker/…`: criar pastas, configurar o projeto, gerar sprites placeholder, gerar dados de exemplo e montar a cena `Workshop`. Todas idempotentes, com entrada batch `AnvilClickerSetup.RunAllBatch`.
+- Testes EditMode para `Wallet`, `ForgeService`, `GameContext` e `NumberFormatter`.
+- Documentação: GDD, arquitetura, roadmap, README e CLAUDE.md.
 - `.gitignore` da Unity e `.gitattributes` com Git LFS para binários.

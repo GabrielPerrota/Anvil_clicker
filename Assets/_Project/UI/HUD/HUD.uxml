@@ -1,0 +1,28 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="HUD.uss" />
+    <ui:VisualElement name="hud-root" class="hud-root" picking-mode="Ignore">
+        <ui:VisualElement name="hud-top" class="hud-top" picking-mode="Ignore">
+            <ui:VisualElement name="gold-panel" class="panel gold-panel" picking-mode="Ignore">
+                <ui:VisualElement class="gold-icon" picking-mode="Ignore" />
+                <ui:VisualElement class="gold-text" picking-mode="Ignore">
+                    <ui:Label name="gold-label" class="gold-label" text="0" picking-mode="Ignore" />
+                    <ui:Label class="caption" text="ouro" picking-mode="Ignore" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="hud-bottom" class="hud-bottom" picking-mode="Ignore">
+            <ui:VisualElement name="forge-panel" class="panel forge-panel" picking-mode="Ignore">
+                <ui:Label name="weapon-label" class="weapon-label" text="-" picking-mode="Ignore" />
+                <ui:VisualElement name="progress-track" class="progress-track" picking-mode="Ignore">
+                    <ui:VisualElement name="progress-fill" class="progress-fill" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement class="forge-stats" picking-mode="Ignore">
+                    <ui:Label name="power-label" class="stat-label" text="-" picking-mode="Ignore" />
+                    <ui:Label name="forged-label" class="stat-label" text="-" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:Label class="hint" text="Clique na bigorna ou aperte Espaço" picking-mode="Ignore" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="floating-layer" class="floating-layer" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,145 @@
+/* Palette */
+:root {
+    --color-ink: rgb(244, 232, 210);
+    --color-ink-muted: rgb(176, 160, 138);
+    --color-panel: rgba(28, 20, 16, 0.82);
+    --color-panel-border: rgb(110, 78, 46);
+    --color-gold: rgb(255, 200, 70);
+    --color-ember: rgb(255, 120, 40);
+    --color-crit: rgb(255, 222, 90);
+    --color-track: rgba(0, 0, 0, 0.45);
+}
+
+.hud-root {
+    flex-grow: 1;
+    justify-content: space-between;
+    padding: 24px;
+}
+
+.panel {
+    background-color: var(--color-panel);
+    border-width: 2px;
+    border-color: var(--color-panel-border);
+    border-radius: 10px;
+    padding: 12px 18px;
+}
+
+/* Top bar */
+.hud-top {
+    flex-direction: row;
+}
+
+.gold-panel {
+    flex-direction: row;
+    align-items: center;
+}
+
+.gold-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background-color: var(--color-gold);
+    border-width: 2px;
+    border-color: rgb(170, 110, 20);
+    margin-right: 12px;
+}
+
+.gold-label {
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: var(--color-gold);
+    -unity-text-align: middle-left;
+    padding: 0;
+    margin: 0;
+}
+
+.caption {
+    font-size: 14px;
+    color: var(--color-ink-muted);
+    padding: 0;
+    margin: 0;
+}
+
+/* Bottom forge panel */
+.hud-bottom {
+    align-items: center;
+}
+
+.forge-panel {
+    width: 460px;
+    align-items: stretch;
+}
+
+.weapon-label {
+    font-size: 22px;
+    -unity-font-style: bold;
+    color: var(--color-ink);
+    -unity-text-align: middle-center;
+    margin-bottom: 8px;
+}
+
+.progress-track {
+    height: 18px;
+    border-radius: 9px;
+    background-color: var(--color-track);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 9px;
+    background-color: var(--color-ember);
+    transition-property: width;
+    transition-duration: 0.08s;
+}
+
+.forge-stats {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.stat-label {
+    font-size: 15px;
+    color: var(--color-ink-muted);
+    padding: 0;
+    margin: 0;
+}
+
+.hint {
+    font-size: 13px;
+    color: var(--color-ink-muted);
+    -unity-text-align: middle-center;
+    margin-top: 6px;
+    opacity: 0.7;
+}
+
+/* Floating numbers */
+.floating-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.floating-text {
+    font-size: 26px;
+    -unity-font-style: bold;
+    color: var(--color-ink);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.85);
+    padding: 0;
+    margin: 0;
+}
+
+.floating-text--critical {
+    font-size: 40px;
+    color: var(--color-crit);
+}
+
+.floating-text--reward {
+    font-size: 24px;
+    color: var(--color-gold);
+}
