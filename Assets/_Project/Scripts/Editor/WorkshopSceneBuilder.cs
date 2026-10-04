@@ -19,6 +19,12 @@ namespace AnvilClicker.Editor
     {
         const int FloorRadius = 4;
 
+        /// <summary>
+        /// Half the HUD's right padding (464 px of a 1080 px-tall reference) in world units:
+        /// 232 px × (2 × orthographic size 3.4 / 1080 px).
+        /// </summary>
+        const float CameraOffsetX = 1.46f;
+
         static readonly Color BackgroundColor = new Color(0.07f, 0.055f, 0.06f);
         static readonly Color AmbientColor = new Color(0.72f, 0.68f, 0.82f);
         static readonly Color ForgeLightColor = new Color(1f, 0.55f, 0.22f);
@@ -58,12 +64,13 @@ namespace AnvilClicker.Editor
             var sparksMaterial = CreateSparksMaterial();
             var panelSettings = CreatePanelSettings();
             var hud = EditorAssetUtility.LoadRequired<VisualTreeAsset>(AnvilClickerPaths.HudUxml);
+            var shopRow = EditorAssetUtility.LoadRequired<VisualTreeAsset>(AnvilClickerPaths.ShopRowUxml);
 
             var camera = CreateCamera();
             CreateGlobalLight();
             var floor = CreateFloor(floorTile);
             var anvil = CreateAnvil(anvilSprite, sparksMaterial);
-            var ui = CreateUi(panelSettings, hud, camera);
+            var ui = CreateUi(panelSettings, hud, shopRow, camera);
             var bootstrap = CreateSystems(database, camera, anvil, ui);
 
             Validate(bootstrap, floor);
@@ -78,7 +85,8 @@ namespace AnvilClicker.Editor
         static Camera CreateCamera()
         {
             var go = new GameObject("Main Camera") { tag = "MainCamera" };
-            go.transform.position = new Vector3(0f, 0.9f, -10f);
+            // Shifted right so the anvil sits in the middle of the area left of the shop panel.
+            go.transform.position = new Vector3(CameraOffsetX, 0.9f, -10f);
 
             var camera = go.AddComponent<Camera>();
             camera.orthographic = true;
@@ -225,10 +233,11 @@ namespace AnvilClicker.Editor
 
         sealed class UiRig
         {
+            public UIDocument Document;
             public FloatingTextLayer FloatingText;
         }
 
-        static UiRig CreateUi(PanelSettings panelSettings, VisualTreeAsset hud, Camera camera)
+        static UiRig CreateUi(PanelSettings panelSettings, VisualTreeAsset hud, VisualTreeAsset shopRow, Camera camera)
         {
             var go = new GameObject("HUD");
             var document = go.AddComponent<UIDocument>();
@@ -239,7 +248,12 @@ namespace AnvilClicker.Editor
             var floatingText = go.AddComponent<FloatingTextLayer>();
             EditorAssetUtility.Edit(floatingText, so => so.Require("worldCamera").objectReferenceValue = camera);
 
-            return new UiRig { FloatingText = floatingText };
+            var shop = go.AddComponent<ShopPresenter>();
+            EditorAssetUtility.Edit(shop, so => so.Require("rowTemplate").objectReferenceValue = shopRow);
+
+            go.AddComponent<OfflineSummaryPresenter>();
+
+            return new UiRig { Document = document, FloatingText = floatingText };
         }
 
         // --- Systems -------------------------------------------------------------------------------
@@ -250,12 +264,14 @@ namespace AnvilClicker.Editor
 
             var bootstrap = go.AddComponent<GameBootstrap>();
             EditorAssetUtility.Edit(bootstrap, so => so.Require("database").objectReferenceValue = database);
+            go.AddComponent<GameLoop>();
 
             var input = go.AddComponent<ForgeInput>();
             EditorAssetUtility.Edit(input, so =>
             {
                 so.Require("anvilCollider").objectReferenceValue = anvil.Collider;
                 so.Require("worldCamera").objectReferenceValue = camera;
+                so.Require("uiDocument").objectReferenceValue = ui.Document;
             });
 
             var sfx = go.AddComponent<ProceduralSfx>();
