@@ -5,8 +5,8 @@ using UnityEngine;
 namespace AnvilClicker.Runtime
 {
     /// <summary>
-    /// Composition root: builds the game state and services, then hands them to every
-    /// <see cref="IGameContextConsumer"/> in the scene. The only place where systems are wired.
+    /// Composition root: loads the save, builds the game services, credits offline progress and hands the
+    /// context to every <see cref="IGameContextConsumer"/> in the scene. The only place where systems are wired.
     /// </summary>
     [DefaultExecutionOrder(-1000)]
     public sealed class GameBootstrap : MonoBehaviour
@@ -15,6 +15,14 @@ namespace AnvilClicker.Runtime
 
         [Tooltip("0 = different rolls every session. Any other value makes crits reproducible.")]
         [SerializeField] int randomSeed;
+
+        [Tooltip("Turn off to always start a fresh game (handy while testing).")]
+        [SerializeField] bool loadSave = true;
+
+        /// <summary>For editor debug tools only. Gameplay code receives the context through Bind.</summary>
+        public GameContext Context { get; private set; }
+
+        public SaveSystem SaveSystem { get; private set; }
 
         void Awake()
         {
@@ -25,12 +33,24 @@ namespace AnvilClicker.Runtime
                 return;
             }
 
-            // M2 replaces this with the save system.
-            var state = new GameState();
-            var random = randomSeed == 0 ? new SystemRandom() : new SystemRandom(randomSeed);
-            var context = new GameContext(state, database.Balance, database, random);
+            var clock = new SystemClock();
+            SaveSystem = new SaveSystem(SaveSystem.DefaultDirectory, new SaveSerializer(), clock);
 
-            BindConsumers(context);
+            var state = new GameState();
+            System.DateTime? savedAtUtc = null;
+            if (loadSave && SaveSystem.TryLoad(out var envelope))
+            {
+                state = envelope.State;
+                savedAtUtc = envelope.SavedAtUtc;
+            }
+
+            var random = randomSeed == 0 ? new SystemRandom() : new SystemRandom(randomSeed);
+            Context = new GameContext(state, database.Balance, database, random);
+
+            // Applied before Bind so the burst of weapons does not trigger strike feedback.
+            if (savedAtUtc.HasValue) Context.ApplyOfflineProgress(clock.UtcNow - savedAtUtc.Value);
+
+            BindConsumers(Context);
         }
 
         static void BindConsumers(GameContext context)
