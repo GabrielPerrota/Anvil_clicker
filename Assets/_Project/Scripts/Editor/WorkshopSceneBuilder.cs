@@ -38,9 +38,20 @@ namespace AnvilClicker.Editor
             Build();
         }
 
+        [MenuItem(AnvilClickerPaths.MenuRoot + "Scenes/Build Workshop Scene", true)]
+        static bool CanBuild() => !EditorApplication.isPlayingOrWillChangePlaymode;
+
         [MenuItem(AnvilClickerPaths.MenuRoot + "Scenes/Build Workshop Scene", priority = 60)]
         public static void Build()
         {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new System.InvalidOperationException("Stop Play mode before building the Workshop scene.");
+
+            EditorAssetUtility.EnsureFolder(AnvilClickerPaths.Scenes);
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            // Load assets only after NewScene: opening a scene in Single mode unloads unused assets, which
+            // turns references loaded earlier into destroyed objects that get saved as missing (null).
             var database = EditorAssetUtility.LoadRequired<GameDatabase>(AnvilClickerPaths.GameDatabase);
             var anvilSprite = EditorAssetUtility.LoadRequired<Sprite>(AnvilClickerPaths.AnvilSprite);
             var floorTile = EditorAssetUtility.LoadRequired<Tile>(AnvilClickerPaths.FloorTile);
@@ -48,16 +59,14 @@ namespace AnvilClicker.Editor
             var panelSettings = CreatePanelSettings();
             var hud = EditorAssetUtility.LoadRequired<VisualTreeAsset>(AnvilClickerPaths.HudUxml);
 
-            EditorAssetUtility.EnsureFolder(AnvilClickerPaths.Scenes);
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-
             var camera = CreateCamera();
             CreateGlobalLight();
-            CreateFloor(floorTile);
+            var floor = CreateFloor(floorTile);
             var anvil = CreateAnvil(anvilSprite, sparksMaterial);
             var ui = CreateUi(panelSettings, hud, camera);
-            CreateSystems(database, camera, anvil, ui);
+            var bootstrap = CreateSystems(database, camera, anvil, ui);
 
+            Validate(bootstrap, floor);
             EditorSceneManager.SaveScene(scene, AnvilClickerPaths.WorkshopScene);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(AnvilClickerPaths.WorkshopScene, true) };
             AssetDatabase.SaveAssets();
@@ -94,7 +103,7 @@ namespace AnvilClicker.Editor
             light.intensity = 0.45f;
         }
 
-        static void CreateFloor(Tile floorTile)
+        static Tilemap CreateFloor(Tile floorTile)
         {
             var grid = new GameObject("Grid").AddComponent<Grid>();
             grid.cellLayout = GridLayout.CellLayout.Isometric;
@@ -110,6 +119,8 @@ namespace AnvilClicker.Editor
             for (var x = -FloorRadius; x <= FloorRadius; x++)
             for (var y = -FloorRadius; y <= FloorRadius; y++)
                 tilemap.SetTile(new Vector3Int(x, y, 0), floorTile);
+
+            return tilemap;
         }
 
         sealed class AnvilRig
@@ -233,7 +244,7 @@ namespace AnvilClicker.Editor
 
         // --- Systems -------------------------------------------------------------------------------
 
-        static void CreateSystems(GameDatabase database, Camera camera, AnvilRig anvil, UiRig ui)
+        static GameBootstrap CreateSystems(GameDatabase database, Camera camera, AnvilRig anvil, UiRig ui)
         {
             var go = new GameObject("Systems");
 
@@ -260,6 +271,19 @@ namespace AnvilClicker.Editor
                 so.Require("sfx").objectReferenceValue = sfx;
                 so.Require("forgeLight").objectReferenceValue = anvil.ForgeLight;
             });
+
+            return bootstrap;
+        }
+
+        /// <summary>Fails the build instead of saving a scene whose asset references were lost.</summary>
+        static void Validate(GameBootstrap bootstrap, Tilemap floor)
+        {
+            var database = new SerializedObject(bootstrap).Require("database").objectReferenceValue as GameDatabase;
+            if (database == null || database.Balance == null)
+                throw new System.InvalidOperationException("Workshop scene: GameBootstrap lost its GameDatabase reference.");
+
+            if (floor.GetUsedTilesCount() == 0)
+                throw new System.InvalidOperationException("Workshop scene: the floor tilemap has no tiles.");
         }
 
         // --- Assets --------------------------------------------------------------------------------
