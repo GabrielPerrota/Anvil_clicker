@@ -1,7 +1,10 @@
+using System.Collections.Generic;
+
 namespace AnvilClicker.Core
 {
     /// <summary>
     /// Serializable snapshot of a playthrough. Plain data only: every change goes through a service.
+    /// Adding a field is backwards compatible; renaming or removing one needs a save migration.
     /// </summary>
     public sealed class GameState
     {
@@ -19,5 +22,11 @@ namespace AnvilClicker.Core
         public string ActiveWeaponId;
 
         public long WeaponsForged;
+
+        /// <summary>Upgrade id → level owned.</summary>
+        public Dictionary<string, int> UpgradeLevels = new Dictionary<string, int>();
+
+        /// <summary>Apprentice id → units hired.</summary>
+        public Dictionary<string, int> Apprentices = new Dictionary<string, int>();
     }
 }
