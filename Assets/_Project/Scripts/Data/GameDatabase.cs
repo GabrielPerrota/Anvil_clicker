@@ -4,32 +4,41 @@ using UnityEngine;
 
 namespace AnvilClicker.Data
 {
-    /// <summary>Single entry point to every definition asset. Looked up by stable id.</summary>
+    /// <summary>Single entry point to every definition asset. List order is the display order in the shop.</summary>
     [CreateAssetMenu(menuName = "Anvil Clicker/Game Database", fileName = "GameDatabase")]
-    public sealed class GameDatabase : ScriptableObject, IWeaponCatalog
+    public sealed class GameDatabase : ScriptableObject, IGameCatalog
     {
         [SerializeField] GameBalanceConfig balance;
         [SerializeField] List<WeaponTypeDefinition> weapons = new List<WeaponTypeDefinition>();
+        [SerializeField] List<UpgradeDefinition> upgrades = new List<UpgradeDefinition>();
+        [SerializeField] List<ApprenticeDefinition> apprentices = new List<ApprenticeDefinition>();
 
         Dictionary<string, WeaponTypeDefinition> _weaponsById;
+        IUpgradeDefinition[] _upgrades;
+        IApprenticeDefinition[] _apprentices;
 
         public GameBalanceConfig Balance => balance;
 
         public IReadOnlyList<WeaponTypeDefinition> Weapons => weapons;
+        public IReadOnlyList<UpgradeDefinition> UpgradeAssets => upgrades;
+        public IReadOnlyList<ApprenticeDefinition> ApprenticeAssets => apprentices;
+
+        IReadOnlyList<IUpgradeDefinition> IGameCatalog.Upgrades => _upgrades ??= NonNull<UpgradeDefinition, IUpgradeDefinition>(upgrades);
+        IReadOnlyList<IApprenticeDefinition> IGameCatalog.Apprentices => _apprentices ??= NonNull<ApprenticeDefinition, IApprenticeDefinition>(apprentices);
 
         public bool TryGetWeapon(string id, out IWeaponDefinition weapon)
         {
             weapon = null;
             if (string.IsNullOrEmpty(id)) return false;
 
-            _weaponsById ??= BuildIndex();
+            _weaponsById ??= BuildWeaponIndex();
             if (!_weaponsById.TryGetValue(id, out var definition)) return false;
 
             weapon = definition;
             return true;
         }
 
-        Dictionary<string, WeaponTypeDefinition> BuildIndex()
+        Dictionary<string, WeaponTypeDefinition> BuildWeaponIndex()
         {
             var index = new Dictionary<string, WeaponTypeDefinition>();
             foreach (var weapon in weapons)
@@ -41,6 +50,21 @@ namespace AnvilClicker.Data
             return index;
         }
 
-        void OnValidate() => _weaponsById = null;
+        static TInterface[] NonNull<TAsset, TInterface>(List<TAsset> assets) where TAsset : Object, TInterface
+        {
+            var result = new List<TInterface>(assets.Count);
+            foreach (var asset in assets)
+            {
+                if (asset != null) result.Add(asset);
+            }
+            return result.ToArray();
+        }
+
+        void OnValidate()
+        {
+            _weaponsById = null;
+            _upgrades = null;
+            _apprentices = null;
+        }
     }
 }
