@@ -11,6 +11,9 @@ namespace AnvilClicker.Editor
     /// </summary>
     public static class AnvilClickerSetup
     {
+        [MenuItem(AnvilClickerPaths.MenuRoot + "Setup/Run All", true)]
+        static bool CanRunAll() => !EditorApplication.isPlayingOrWillChangePlaymode;
+
         [MenuItem(AnvilClickerPaths.MenuRoot + "Setup/Run All", priority = 0)]
         public static void RunAll()
         {
@@ -26,11 +29,20 @@ namespace AnvilClicker.Editor
         }
 
         /// <summary>Entry point for -executeMethod. Exits with code 1 on any failure.</summary>
-        public static void RunAllBatch()
+        public static void RunAllBatch() => RunBatch(RunAll);
+
+        /// <summary>Entry point for -executeMethod: forces a rebuild of the Workshop scene.</summary>
+        public static void RebuildWorkshopSceneBatch() => RunBatch(() =>
+        {
+            RunAll();
+            WorkshopSceneBuilder.Build();
+        });
+
+        static void RunBatch(Action action)
         {
             try
             {
-                RunAll();
+                action();
             }
             catch (Exception exception)
             {

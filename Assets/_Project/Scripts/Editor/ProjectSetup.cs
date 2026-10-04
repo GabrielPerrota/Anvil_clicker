@@ -39,6 +39,10 @@ namespace AnvilClicker.Editor
             PlayerSettings.resizableWindow = true;
             EditorSettings.serializationMode = SerializationMode.ForceText;
 
+            // Always reload the domain on Play: with it disabled, the Input System keeps stale state
+            // monitors between sessions ("Binding index out of range" + NullReferenceException).
+            EditorSettings.enterPlayModeOptionsEnabled = false;
+
             ConfigureSortingLayers();
             ConfigureRenderer2D();
             ConfigureInputActions();

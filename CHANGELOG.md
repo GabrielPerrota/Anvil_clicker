@@ -5,6 +5,17 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), 
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-10-04
+
+### Fixed
+- A cena `Workshop` era salva sem a referência ao `GameDatabase` e sem os tiles do chão. O builder carregava os assets antes do `NewScene`, que os descarregava. Agora carrega depois e valida as referências antes de salvar.
+- `NullReferenceException` do Input System ao apertar teclas depois de entrar no Play mais de uma vez. Era o "Enter Play Mode Options" sem recarregar o domínio, padrão do template; o domínio agora é recarregado a cada Play.
+- O `Build Workshop Scene` quebrava se executado com o Play ligado. Agora o menu fica desabilitado nesse caso.
+
+### Added
+- O Editor sempre inicia o Play pela cena `Workshop` e a abre automaticamente no lugar de uma cena "Untitled" vazia.
+- Entrada batch `AnvilClickerSetup.RebuildWorkshopSceneBatch` para forçar a reconstrução da cena.
+
 ## [0.0.1] - 2026-10-03 — M1: Fundação e o primeiro golpe
 
 ### Added
