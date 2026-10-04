@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a389af9661803134f8345dbcb838f4ca, type: 3}
+  m_Name: Upgrade_MerchantTongue
+  m_EditorClassIdentifier: AnvilClicker.Data::AnvilClicker.Data.UpgradeDefinition
+  id: upgrade.merchant_tongue
+  displayName: "L\xE1bia de Mercador"
+  description: "+10% de ouro por arma vendida, por n\xEDvel."
+  category: 3
+  baseCost: 300
+  costGrowth: 1.25
+  maxLevel: 0
+  unlockAtLifetimeGold: 150
+  effects:
+  - type: 6
+    valuePerLevel: 0.1
