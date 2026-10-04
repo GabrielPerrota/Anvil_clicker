@@ -6,7 +6,7 @@
                 <ui:VisualElement class="gold-icon" picking-mode="Ignore" />
                 <ui:VisualElement class="gold-text" picking-mode="Ignore">
                     <ui:Label name="gold-label" class="gold-label" text="0" picking-mode="Ignore" />
-                    <ui:Label class="caption" text="ouro" picking-mode="Ignore" />
+                    <ui:Label name="rate-label" class="caption" text="ouro" picking-mode="Ignore" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
@@ -23,6 +23,34 @@
                 <ui:Label class="hint" text="Clique na bigorna ou aperte Espaço" picking-mode="Ignore" />
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="floating-layer" class="floating-layer" picking-mode="Ignore" />
+    </ui:VisualElement>
+
+    <ui:VisualElement name="shop-panel" class="panel shop-panel blocks-world-input">
+        <ui:VisualElement class="shop-tabs">
+            <ui:Button name="tab-upgrades" text="Melhorias" class="shop-tab shop-tab--active" />
+            <ui:Button name="tab-apprentices" text="Aprendizes" class="shop-tab" />
+        </ui:VisualElement>
+        <ui:VisualElement class="buy-amounts">
+            <ui:Label text="Comprar" class="caption buy-amounts__label" />
+            <ui:Button name="amount-1" text="×1" class="buy-amount buy-amount--active" />
+            <ui:Button name="amount-10" text="×10" class="buy-amount" />
+            <ui:Button name="amount-100" text="×100" class="buy-amount" />
+            <ui:Button name="amount-max" text="Máx" class="buy-amount" />
+        </ui:VisualElement>
+        <ui:ScrollView name="shop-list" class="shop-list" mode="Vertical" horizontal-scroller-visibility="Hidden" />
+        <ui:Label name="shop-empty" class="caption shop-empty" text="Ganhe mais ouro para desbloquear." />
+    </ui:VisualElement>
+
+    <ui:VisualElement name="floating-layer" class="floating-layer" picking-mode="Ignore" />
+
+    <ui:VisualElement name="offline-modal" class="modal-backdrop blocks-world-input hidden">
+        <ui:VisualElement class="panel modal">
+            <ui:Label name="offline-title" class="modal-title" text="Bem-vindo de volta, ferreiro!" />
+            <ui:Label name="offline-time" class="modal-text" text="-" />
+            <ui:Label name="offline-weapons" class="modal-text" text="-" />
+            <ui:Label name="offline-gold" class="modal-gold" text="-" />
+            <ui:Label name="offline-cap" class="caption modal-note" text="-" />
+            <ui:Button name="offline-continue" class="modal-button" text="Continuar" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
