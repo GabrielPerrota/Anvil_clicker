@@ -119,5 +119,16 @@ namespace AnvilClicker.Tests
             Assert.That(stack.ClickPower, Is.EqualTo(3));
             Assert.That(raised, Is.True);
         }
+
+        [Test]
+        public void ForgeSpeedFactor_IsOneWithoutUpgradesAndMultipliesWithThem()
+        {
+            Assert.That(Stack().ForgeSpeedFactor, Is.EqualTo(1));
+
+            Owned("bellows", 2, new UpgradeEffect(ModifierType.ForgeSpeedMultiplier, 0.1)); // 1.2
+            Owned("coal", 1, new UpgradeEffect(ModifierType.ForgeSpeedMultiplier, 0.5));    // 1.5
+
+            Assert.That(Stack().ForgeSpeedFactor, Is.EqualTo(1.8).Within(1e-9));
+        }
     }
 }
