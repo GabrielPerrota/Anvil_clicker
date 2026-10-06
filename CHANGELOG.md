@@ -5,6 +5,32 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), 
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-10-06 — M2: Economia, idle e persistência
+
+### Added
+- Economia: custo geométrico `base · crescimentoⁿ`, preço em lote pela soma geométrica e "máximo comprável" (`EconomyFormulas`).
+- `ModifierStack`: 7 tipos de modificador (poder do golpe, velocidade da forja, crítico, aprendizes, valor de venda) calculados a partir dos upgrades; multiplicadores de upgrades diferentes se multiplicam.
+- 9 melhorias (martelos, foles, carvão, olho do mestre, golpe certeiro, lábia de mercador, treinamento) e 4 tipos de aprendiz (Aprendiz, Jornaleiro, Veterano, Mestre). A produção de cada tipo dobra com 25, 50, 100 e 200 unidades.
+- Produção passiva: `GameContext.Tick` e `GameLoop`.
+- Save em JSON versionado (Newtonsoft) com migrações, escrita atômica, backup `.bak` e quarentena `.corrupt`.
+- Autosave a cada 30 s e ao perder o foco, pausar ou fechar.
+- Progresso offline: teto de 8 h, 50% de eficiência, mínimo de 1 min, tolerante a relógio voltando no tempo. Modal de resumo ao voltar ("Bem-vindo de volta, ferreiro!").
+- Loja em UI Toolkit: abas Melhorias e Aprendizes, compra ×1/×10/×100/Máx, itens liberados por ouro acumulado e PF/s no HUD. Clicar na UI não conta como golpe.
+- Dados: `UpgradeDefinition`, `ApprenticeDefinition` e `GameDatabaseValidator`.
+- Ferramentas em `Tools/Anvil Clicker/`: `Data/Validate Database`, `Save/Open Save Folder`, `Save/Delete Save` e cheats em Play (`Debug/Add 1K Gold`, `Add 1M Gold`, `Simulate 1h Offline`, `Save Now`).
+- Pacote `com.unity.nuget.newtonsoft-json` 3.2.2 e `link.xml` para builds IL2CPP/WebGL.
+- Testes EditMode: 80 novos casos (148 no total) para fórmulas, modificadores, upgrades, aprendizes, offline, save/migração e validação dos dados reais.
+- Painel de progresso do projeto em `docs/progress/`.
+
+### Changed
+- `IForgeBalance` virou `IGameBalance` e o `ForgeService` lê os números finais de `IForgeStats` (o `ModifierStack`).
+- Armas prontas continuam sendo vendidas na hora, mas os ganhos aparecem agrupados num único "+ouro" a cada 0,35 s, para não poluir a tela com aprendizes.
+- `Run All` roda a validação do banco de dados.
+
+### Known issues
+- Build WebGL e validação do save no IndexedDB adiados para o início do M3.
+- Se um build do Player for interrompido, o cache global do Unity (`%LOCALAPPDATA%\Unity\Caches\bee`) pode ficar corrompido e os sprites aparecem magenta. Apague essa pasta e refaça o build.
+
 ## [0.0.2] - 2026-10-04
 
 ### Fixed

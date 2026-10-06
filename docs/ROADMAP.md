@@ -42,18 +42,18 @@
 **Pronto quando:** dá Play, cada click forja uma adaga de ferro, ela é vendida automaticamente e o ouro aparece formatado. Os testes passam.
 No M1 a venda é automática e só existe uma arma, porque balcão e catálogo vêm depois.
 
-## M2 — Economia, idle e persistência
+## M2 — Economia, idle e persistência ✅ (`v0.0.3`)
 **Meta:** o loop incremental de verdade, que sobrevive a fechar o jogo.
-- [ ] `feat(core)`: `EconomyFormulas` (custo geométrico, lote, máx)
-- [ ] `feat(core)`: `ModifierStack` + `UpgradeService` (martelos, forja, precisão)
-- [ ] `feat(core)`: `WorkforceService` (aprendizes, PF/s, marcos)
-- [ ] `feat(data)`: SOs `UpgradeDefinition`, `ApprenticeDefinition`, `GameBalanceConfig`, `GameDatabase` + `Data/Generate Sample Data`
-- [ ] `feat(ui)`: painel de upgrades e aprendizes (×1/×10/×100/Máx)
-- [ ] `feat(save)`: SaveSystem JSON versionado, escrita atômica, `.bak`, autosave
-- [ ] `feat(core)`: `OfflineProgressCalculator` + modal de resumo
-- [ ] `feat(editor)`: `Data/Validate Database`, `Save/*`, `Debug/Add Gold`
-- [ ] `test`: fórmulas, modificadores, save/migração, offline
-- [ ] `chore`: primeiro build WebGL (validar o save no IndexedDB)
+- [x] `feat(core)`: `EconomyFormulas` (custo geométrico, lote, máx)
+- [x] `feat(core)`: `ModifierStack` + `UpgradeService` (martelos, forja, precisão)
+- [x] `feat(core)`: `WorkforceService` (aprendizes, PF/s, marcos)
+- [x] `feat(data)`: SOs `UpgradeDefinition`, `ApprenticeDefinition`, `GameBalanceConfig`, `GameDatabase` + `Data/Generate Sample Data`
+- [x] `feat(ui)`: painel de upgrades e aprendizes (×1/×10/×100/Máx)
+- [x] `feat(save)`: SaveSystem JSON versionado, escrita atômica, `.bak`, autosave
+- [x] `feat(core)`: `OfflineProgressCalculator` + modal de resumo
+- [x] `feat(editor)`: `Data/Validate Database`, `Save/*`, `Debug/Add Gold`
+- [x] `test`: fórmulas, modificadores, save/migração, offline
+- [ ] `chore`: primeiro build WebGL (validar o save no IndexedDB). **Adiado para o início do M3**
 
 **Pronto quando:** dá para jogar 30 min, fechar, voltar e ver o resumo offline correto.
 

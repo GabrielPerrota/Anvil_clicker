@@ -216,20 +216,20 @@ Se um dia precisarmos passar de 1e308, trocamos por uma struct `BigNumber` (mant
 ```json
 {
   "saveVersion": 1,
-  "gameVersion": "0.1.0",
+  "gameVersion": "0.0.3",
   "savedAtUtc": "2026-10-02T19:00:00Z",
   "state": { "...": "GameState" }
 }
 ```
 
 **Migrações e escrita:**
-- **Migrações:** `ISaveMigration { int From; JObject Migrate(JObject) }`, aplicadas em cadeia até a versão atual. Cada migração tem um teste.
-- **Escrita atômica:** grava `save.tmp`, move o atual para `save.bak` e renomeia o tmp. Se o load falhar, tenta o `.bak`.
-- **Local:** `Application.persistentDataPath/save.json`. No WebGL, isso é IndexedDB; vamos validar a persistência no build WebGL do M2.
+- **Migrações:** `ISaveMigration { int FromVersion; void Migrate(JObject envelope) }`, aplicadas em cadeia até a versão atual (lista em `SaveMigrations.All`). Cada migração tem um teste.
+- **Escrita atômica:** grava `anvil_save.json.tmp`, move o atual para `.bak` e renomeia o tmp. Se o load falhar, o arquivo ruim vira `.corrupt` (nunca é apagado) e o `.bak` é tentado.
+- **Local:** `Application.persistentDataPath/anvil_save.json`. No WebGL, isso é IndexedDB; a persistência será validada no primeiro build WebGL (início do M3).
 
 **Gatilhos:**
 - Autosave a cada 30 s (configurável).
-- Ao comprar algo importante.
+- Autosave ao comprar não foi necessário no M2: o intervalo de 30 s e os eventos de foco bastam.
 - Em `OnApplicationPause`, `OnApplicationFocus(false)` e `OnApplicationQuit`. No WebGL o quit não é confiável, por isso o autosave periódico.
 
 ## 9. Apresentação
