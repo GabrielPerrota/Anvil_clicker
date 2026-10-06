@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using AnvilClicker.Core;
 using UnityEngine;
 
@@ -48,7 +49,60 @@ namespace AnvilClicker.Data
                 if (!Positive(apprentice.BaseForgePointsPerSecond)) errors.Add($"{label}: forge points per second must be > 0.");
             }
 
+
+            ValidateRooms(database, ids, errors);
+
             return errors;
+        }
+
+        static void ValidateRooms(GameDatabase database, HashSet<string> ids, List<string> errors)
+        {
+            var stationIds = new HashSet<string>();
+            foreach (var station in database.StationAssets)
+            {
+                if (station == null)
+                {
+                    errors.Add("Station list contains an empty slot.");
+                    continue;
+                }
+
+                var label = $"Station '{station.name}'";
+                if (string.IsNullOrWhiteSpace(station.Id)) errors.Add($"{label}: id is empty.");
+                else if (!stationIds.Add(station.Id)) errors.Add($"{label}: id '{station.Id}' is used more than once.");
+                if (station.Prefab == null) errors.Add($"{label}: prefab is not set.");
+                if (station.InteractionRadius <= 0) errors.Add($"{label}: interaction radius must be > 0.");
+            }
+
+            var hasFreeRoom = false;
+            foreach (var room in database.RoomAssets)
+            {
+                if (!CheckEntry(room, "Room", ids, errors, out var label)) continue;
+                if (!NonNegative(room.Cost)) errors.Add($"{label}: cost must be >= 0.");
+                if (!NonNegative(room.UnlockAtLifetimeGold)) errors.Add($"{label}: unlock threshold must be >= 0.");
+                if (room.Area.width < 1 || room.Area.height < 1) errors.Add($"{label}: area is empty.");
+                if (room.Cost <= 0) hasFreeRoom = true;
+
+                foreach (var door in room.DoorCells)
+                {
+                    if (room.Area.Contains(door)) errors.Add($"{label}: door cell {door} is inside the room; doors sit just outside the area.");
+                }
+
+                var used = new HashSet<Vector2Int>();
+                foreach (var placement in room.Stations)
+                {
+                    if (placement.station == null)
+                    {
+                        errors.Add($"{label}: has a placement without a station.");
+                        continue;
+                    }
+
+                    if (!database.StationAssets.Contains(placement.station)) errors.Add($"{label}: station '{placement.station.name}' is not listed in the database.");
+                    if (!room.Area.Contains(placement.cell)) errors.Add($"{label}: station '{placement.station.name}' is outside the room area.");
+                    if (!used.Add(placement.cell)) errors.Add($"{label}: two stations share the cell {placement.cell}.");
+                }
+            }
+
+            if (database.RoomAssets.Count > 0 && !hasFreeRoom) errors.Add("No room is free: the player would start without a workshop.");
         }
 
         static void ValidateBalance(GameBalanceConfig balance, GameDatabase database, List<string> errors)
@@ -89,6 +143,7 @@ namespace AnvilClicker.Data
             var id = entry is IWeaponDefinition w ? w.Id
                 : entry is IUpgradeDefinition u ? u.Id
                 : entry is IApprenticeDefinition a ? a.Id
+                : entry is IRoomDefinition r ? r.Id
                 : null;
 
             label = $"{kind} '{entry.name}'";

@@ -11,7 +11,8 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="hud-bottom" class="hud-bottom" picking-mode="Ignore">
-            <ui:VisualElement name="forge-panel" class="panel forge-panel" picking-mode="Ignore">
+            <ui:Label name="station-prompt" class="station-prompt hidden" text="E" picking-mode="Ignore" />
+            <ui:VisualElement name="forge-panel" class="panel forge-panel hidden" picking-mode="Ignore">
                 <ui:Label name="weapon-label" class="weapon-label" text="-" picking-mode="Ignore" />
                 <ui:VisualElement name="progress-track" class="progress-track" picking-mode="Ignore">
                     <ui:VisualElement name="progress-fill" class="progress-fill" picking-mode="Ignore" />
@@ -20,17 +21,22 @@
                     <ui:Label name="power-label" class="stat-label" text="-" picking-mode="Ignore" />
                     <ui:Label name="forged-label" class="stat-label" text="-" picking-mode="Ignore" />
                 </ui:VisualElement>
-                <ui:Label class="hint" text="Clique na bigorna ou aperte Espaço" picking-mode="Ignore" />
             </ui:VisualElement>
+            <ui:Label name="hint-label" class="hint" text="" picking-mode="Ignore" />
         </ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:VisualElement name="shop-panel" class="panel shop-panel blocks-world-input">
+    <ui:VisualElement name="shop-panel" class="panel shop-panel blocks-world-input hidden">
+        <ui:VisualElement class="panel-header">
+            <ui:Label text="Mesa de Melhorias" class="panel-title" />
+            <ui:Button name="shop-close" text="✕" class="panel-close" />
+        </ui:VisualElement>
         <ui:VisualElement class="shop-tabs">
             <ui:Button name="tab-upgrades" text="Melhorias" class="shop-tab shop-tab--active" />
             <ui:Button name="tab-apprentices" text="Aprendizes" class="shop-tab" />
+            <ui:Button name="tab-rooms" text="Salas" class="shop-tab" />
         </ui:VisualElement>
-        <ui:VisualElement class="buy-amounts">
+        <ui:VisualElement name="buy-amounts" class="buy-amounts">
             <ui:Label text="Comprar" class="caption buy-amounts__label" />
             <ui:Button name="amount-1" text="×1" class="buy-amount buy-amount--active" />
             <ui:Button name="amount-10" text="×10" class="buy-amount" />
@@ -39,6 +45,14 @@
         </ui:VisualElement>
         <ui:ScrollView name="shop-list" class="shop-list" mode="Vertical" horizontal-scroller-visibility="Hidden" />
         <ui:Label name="shop-empty" class="caption shop-empty" text="Ganhe mais ouro para desbloquear." />
+    </ui:VisualElement>
+
+    <ui:VisualElement name="info-panel" class="panel info-panel blocks-world-input hidden">
+        <ui:VisualElement class="panel-header">
+            <ui:Label name="info-title" text="-" class="panel-title" />
+            <ui:Button name="info-close" text="✕" class="panel-close" />
+        </ui:VisualElement>
+        <ui:Label name="info-text" class="info-text" text="-" />
     </ui:VisualElement>
 
     <ui:VisualElement name="floating-layer" class="floating-layer" picking-mode="Ignore" />

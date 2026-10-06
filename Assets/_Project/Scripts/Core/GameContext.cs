@@ -20,6 +20,7 @@ namespace AnvilClicker.Core
             Wallet = new Wallet(state);
             Modifiers = new ModifierStack(state, balance, catalog);
             Upgrades = new UpgradeService(state, Wallet);
+            Rooms = new RoomService(state, catalog, Wallet);
             Workforce = new WorkforceService(state, balance, catalog, Wallet, Modifiers);
             Forge = new ForgeService(state, Modifiers, catalog, balance.StartingWeaponId, random);
 
@@ -40,6 +41,8 @@ namespace AnvilClicker.Core
         public ModifierStack Modifiers { get; }
 
         public UpgradeService Upgrades { get; }
+
+        public RoomService Rooms { get; }
 
         public WorkforceService Workforce { get; }
 

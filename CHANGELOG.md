@@ -5,6 +5,32 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), 
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-10-06 — M3: A loja isométrica
+
+### Added
+- Oficina isométrica andável: grade isométrica, paredes com colisão, ordenação por Y, câmera com follow, limites e zoom (scroll).
+- Ferreiro com WASD (relativo à tela) e 4 direções; clique numa estação faz o ferreiro andar até ela (A* em grade, sem cortar quinas).
+- Estações com prompt "E": Bigorna, Forja, Mesa de Melhorias, Balcão, Mesa do Mensageiro e Depósito.
+- **Modo forja:** os golpes só valem perto da bigorna (`E`), com a câmera aproximada; andar ou `Esc` sai.
+- **Mesa de Melhorias:** a loja virou um painel da estação, com a nova aba **Salas**.
+- Salas compráveis (Depósito) que surgem no mapa: abertura da porta, piso se espalhando, paredes e estação com poeira.
+- Aprendizes contratados trabalham no mapa, com contador; a luz da forja pisca e esquenta com as melhorias de velocidade.
+- Core: `GridPathfinder`, `IsoMath`, `RoomService` e `LaunchArguments`.
+- Dados: `RoomDefinition` e `StationDefinition`, com validação.
+- **Build WebGL** (`Tools/Anvil Clicker/Build/WebGL` ou `BuildTools.BuildWebGLBatch`) e `tools/serve-webgl.ps1` para testar no navegador. O save persiste no IndexedDB via plugin `AnvilStorage.jslib`.
+- `-saveDir <pasta>` para rodar o jogo (capturas, testes automáticos) sem tocar no save real; `docs/progress/play-session.ps1` joga uma sessão roteirizada com um save temporário.
+- Agente de direção de arte (`.claude/agents/art-director.md`) e o guia `docs/ART_DIRECTION.md`.
+- 45 novos testes (193 no total).
+
+### Changed
+- **Design v2:** o GDD e o roadmap foram reformulados em torno de encomendas, missões do reino e uma economia pequena, com a loja aberta para uma avenida movimentada. Detalhes em `docs/GDD.md` e `docs/ROADMAP.md`.
+- `StrikeFeedback` encontra a bigorna pela estação em uso (`AnvilRig`) e a `Presentation` passa a referenciar `Data`.
+- O Editor sempre recarrega o domínio ao entrar no Play e abre a cena `Workshop`.
+
+### Fixed
+- Cena `Workshop` salva sem referências (assets carregados antes do `NewScene`).
+- `NullReferenceException` do Input System ao reentrar no Play.
+
 ## [0.0.3] - 2026-10-06 — M2: Economia, idle e persistência
 
 ### Added

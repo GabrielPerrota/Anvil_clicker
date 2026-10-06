@@ -28,5 +28,8 @@ namespace AnvilClicker.Core
 
         /// <summary>Apprentice id → units hired.</summary>
         public Dictionary<string, int> Apprentices = new Dictionary<string, int>();
+
+        /// <summary>Ids of the rooms already built (the free starting workshop included).</summary>
+        public List<string> UnlockedRooms = new List<string>();
     }
 }

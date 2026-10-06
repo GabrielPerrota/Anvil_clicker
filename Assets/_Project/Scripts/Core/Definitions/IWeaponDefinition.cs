@@ -28,5 +28,7 @@ namespace AnvilClicker.Core
         IReadOnlyList<IUpgradeDefinition> Upgrades { get; }
 
         IReadOnlyList<IApprenticeDefinition> Apprentices { get; }
+
+        IReadOnlyList<IRoomDefinition> Rooms { get; }
     }
 }

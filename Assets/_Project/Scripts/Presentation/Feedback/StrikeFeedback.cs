@@ -1,24 +1,21 @@
 using AnvilClicker.Core;
 using AnvilClicker.Runtime;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 
 namespace AnvilClicker.Presentation
 {
     /// <summary>
     /// Juice for the anvil: sparks, squash, floating numbers, sound, light flash and (on crits) screen shake.
     /// Listens to forge events only; nothing here affects game logic.
+    /// The anvil itself is a station spawned with its room, so its effects are found through <see cref="ForgeMode"/>.
     /// </summary>
     public sealed class StrikeFeedback : MonoBehaviour, IGameContextConsumer
     {
         [Header("References")]
-        [SerializeField] Transform strikePoint;
-        [SerializeField] ParticleSystem sparks;
-        [SerializeField] AnvilSquash squash;
+        [SerializeField] ForgeMode forgeMode;
         [SerializeField] CameraShake cameraShake;
         [SerializeField] FloatingTextLayer floatingText;
         [SerializeField] ProceduralSfx sfx;
-        [SerializeField] Light2D forgeLight;
 
         [Header("Normal strike")]
         [SerializeField] int sparksNormal = 10;
@@ -32,7 +29,6 @@ namespace AnvilClicker.Presentation
         [Header("Light")]
         [SerializeField] float lightFlash = 1.6f;
         [SerializeField] float lightFlashCritical = 4f;
-        [SerializeField] float lightRecovery = 6f;
 
         [Header("Text")]
         [Tooltip("Horizontal random spread of floating numbers, in world units.")]
@@ -43,7 +39,7 @@ namespace AnvilClicker.Presentation
         [SerializeField] float rewardInterval = 0.35f;
 
         GameContext _context;
-        float _baseLightIntensity;
+        AnvilRig _rig;
         double _lastGold;
         double _pendingReward;
         float _sinceReward;
@@ -52,7 +48,6 @@ namespace AnvilClicker.Presentation
 
         void Start()
         {
-            if (forgeLight != null) _baseLightIntensity = forgeLight.intensity;
             if (_context == null) return;
 
             _lastGold = _context.Wallet.Gold;
@@ -69,22 +64,32 @@ namespace AnvilClicker.Presentation
 
         void Update()
         {
-            if (forgeLight != null)
-                forgeLight.intensity = Mathf.Lerp(forgeLight.intensity, _baseLightIntensity, 1f - Mathf.Exp(-lightRecovery * Time.deltaTime));
-
             _sinceReward += Time.deltaTime;
             if (_pendingReward > 0 && _sinceReward >= rewardInterval) FlushReward();
+        }
+
+        /// <summary>The anvil in use, or the first one in the workshop (apprentices earn gold while nobody is at the anvil).</summary>
+        AnvilRig CurrentRig()
+        {
+            if (forgeMode != null && forgeMode.Anvil != null) return forgeMode.Anvil.GetComponent<AnvilRig>();
+            if (_rig == null) _rig = FindFirstObjectByType<AnvilRig>();
+            return _rig;
         }
 
         void OnStrikeApplied(StrikeResult result)
         {
             var critical = result.IsCritical;
-            var origin = strikePoint != null ? strikePoint.position : transform.position;
+            var rig = CurrentRig();
+            var origin = rig != null ? rig.StrikePoint.position : transform.position;
 
-            if (sparks != null) sparks.Emit(critical ? sparksCritical : sparksNormal);
-            if (squash != null) squash.Punch(critical ? squashCritical : squashNormal);
+            if (rig != null)
+            {
+                if (rig.Sparks != null) rig.Sparks.Emit(critical ? sparksCritical : sparksNormal);
+                if (rig.Squash != null) rig.Squash.Punch(critical ? squashCritical : squashNormal);
+                rig.Flash(critical ? lightFlashCritical : lightFlash);
+            }
+
             if (sfx != null) sfx.PlayStrike(critical);
-            if (forgeLight != null) forgeLight.intensity = _baseLightIntensity + (critical ? lightFlashCritical : lightFlash);
             if (critical && cameraShake != null) cameraShake.Shake(shakeCritical);
 
             if (floatingText != null)
@@ -111,9 +116,10 @@ namespace AnvilClicker.Presentation
 
             if (sfx != null) sfx.PlayForged();
 
-            if (floatingText != null)
+            var rig = CurrentRig();
+            if (floatingText != null && rig != null)
             {
-                var origin = (strikePoint != null ? strikePoint.position : transform.position) + Vector3.up * 0.5f;
+                var origin = rig.StrikePoint.position + Vector3.up * 0.5f;
                 floatingText.Show(origin, string.Format(rewardFormat, NumberFormatter.Format(amount)), FloatingTextStyle.Reward);
             }
         }

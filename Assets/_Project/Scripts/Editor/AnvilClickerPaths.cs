@@ -25,7 +25,7 @@ namespace AnvilClicker.Editor
         public static readonly string[] AllFolders =
         {
             Root, Art, Placeholders, Materials, Tiles, Audio, Prefabs, Scenes,
-            ScriptableObjects, Weapons, Balance, Upgrades, Apprentices, Settings, UI,
+            ScriptableObjects, Weapons, Balance, Upgrades, Apprentices, Stations, Rooms, Prefabs + "/Stations", Prefabs + "/Fx", Settings, UI,
             Root + "/Scripts", Root + "/Tests"
         };
 
@@ -35,6 +35,26 @@ namespace AnvilClicker.Editor
         public const string WhiteSprite = Placeholders + "/white.png";
         public const string SparksMaterial = Materials + "/Sparks.mat";
         public const string FloorTile = Tiles + "/FloorStone.asset";
+        public const string WallTile = Tiles + "/WallStone.asset";
+        public const string InvisibleWallTile = Tiles + "/WallInvisible.asset";
+
+        public const string WallSprite = Placeholders + "/wall_stone.png";
+        public const string ForgeSprite = Placeholders + "/station_forge.png";
+        public const string DeskSprite = Placeholders + "/station_desk.png";
+        public const string CounterSprite = Placeholders + "/station_counter.png";
+        public const string MessengerSprite = Placeholders + "/station_messenger.png";
+        public const string StorageSprite = Placeholders + "/station_storage.png";
+        public const string BarrierSprite = Placeholders + "/barrier_boards.png";
+        public const string PlayerDownRight = Placeholders + "/player_down_right.png";
+        public const string PlayerDownLeft = Placeholders + "/player_down_left.png";
+        public const string PlayerUpLeft = Placeholders + "/player_up_left.png";
+        public const string PlayerUpRight = Placeholders + "/player_up_right.png";
+        public const string WorkerSprite = Placeholders + "/worker.png";
+
+        public const string StationPrefabs = Prefabs + "/Stations";
+        public const string FxPrefabs = Prefabs + "/Fx";
+        public const string Stations = ScriptableObjects + "/Stations";
+        public const string Rooms = ScriptableObjects + "/Rooms";
 
         public const string IronDagger = Weapons + "/Weapon_IronDagger.asset";
         public const string GameBalance = Balance + "/GameBalance.asset";
