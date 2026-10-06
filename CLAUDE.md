@@ -42,6 +42,8 @@ Este guia vale para sessões futuras do Claude Code e para qualquer pessoa no pr
   unity test . --mode EditMode --output TestResults/editmode.xml --timeout 900
   ```
 - Erros de compilação: procure `error CS` em `Logs/setup.log`.
+- **Nunca rode o jogo sem `-saveDir`** em automações (screenshots, testes): ele autosalva e sobrescreve o save real do usuário. Use `AnvilClicker.exe -saveDir <pasta temporária>`.
+- Se um build do Player for interrompido, o cache global `%LOCALAPPDATA%\Unity\Caches\bee` pode ficar corrompido (sprites magenta, `BadImageFormatException` em `*.ref.dll`). Apague essa pasta e `Library/Bee`, e refaça o build. Depois de um build, as configurações em `ProjectSettings/` podem aparecer só com mudança de quebra de linha: descarte com `git checkout`.
 
 ## Git
 - Branches: `main` (estável, com tags), `develop` (integração), `feature/<nome>` (a partir de `develop`).
