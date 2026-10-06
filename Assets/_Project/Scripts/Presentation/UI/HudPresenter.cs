@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace AnvilClicker.Presentation
 {
-    /// <summary>Shows gold and the anvil's progress. Read-only: it never changes game state.</summary>
+    /// <summary>Shows gold, passive rate and the anvil's progress. Read-only: it never changes game state.</summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class HudPresenter : MonoBehaviour, IGameContextConsumer
     {
@@ -13,9 +13,13 @@ namespace AnvilClicker.Presentation
         [SerializeField] string strikePowerFormat = "Golpe: {0} PF";
         [Tooltip("{0} = weapons forged so far.")]
         [SerializeField] string forgedCountFormat = "Armas forjadas: {0}";
+        [Tooltip("{0} = passive forge points per second.")]
+        [SerializeField] string passiveRateFormat = "ouro · aprendizes: {0} PF/s";
+        [SerializeField] string noPassiveText = "ouro";
 
         GameContext _context;
         Label _goldLabel;
+        Label _rateLabel;
         Label _weaponLabel;
         Label _powerLabel;
         Label _forgedLabel;
@@ -29,6 +33,7 @@ namespace AnvilClicker.Presentation
 
             var root = GetComponent<UIDocument>().rootVisualElement;
             _goldLabel = root.Q<Label>("gold-label");
+            _rateLabel = root.Q<Label>("rate-label");
             _weaponLabel = root.Q<Label>("weapon-label");
             _powerLabel = root.Q<Label>("power-label");
             _forgedLabel = root.Q<Label>("forged-label");
@@ -37,12 +42,14 @@ namespace AnvilClicker.Presentation
             _context.Wallet.GoldChanged += OnGoldChanged;
             _context.Forge.ProgressChanged += OnProgressChanged;
             _context.Forge.WeaponForged += OnWeaponForged;
+            _context.Modifiers.Changed += RefreshStats;
+            _context.Workforce.WorkforceChanged += OnWorkforceChanged;
 
             _weaponLabel.text = _context.Forge.ActiveWeapon.DisplayName;
-            _powerLabel.text = string.Format(strikePowerFormat, NumberFormatter.Format(_context.Forge.ClickPower));
             OnGoldChanged(_context.Wallet.Gold);
             OnProgressChanged(_context.Forge.Progress01);
             RefreshForgedCount();
+            RefreshStats();
         }
 
         void OnDestroy()
@@ -51,6 +58,8 @@ namespace AnvilClicker.Presentation
             _context.Wallet.GoldChanged -= OnGoldChanged;
             _context.Forge.ProgressChanged -= OnProgressChanged;
             _context.Forge.WeaponForged -= OnWeaponForged;
+            _context.Modifiers.Changed -= RefreshStats;
+            _context.Workforce.WorkforceChanged -= OnWorkforceChanged;
         }
 
         void OnGoldChanged(double gold) => _goldLabel.text = NumberFormatter.Format(gold);
@@ -60,7 +69,17 @@ namespace AnvilClicker.Presentation
 
         void OnWeaponForged(IWeaponDefinition weapon, long count) => RefreshForgedCount();
 
+        void OnWorkforceChanged(IApprenticeDefinition apprentice, int count) => RefreshStats();
+
         void RefreshForgedCount() =>
             _forgedLabel.text = string.Format(forgedCountFormat, NumberFormatter.Format(_context.Forge.WeaponsForged));
+
+        void RefreshStats()
+        {
+            _powerLabel.text = string.Format(strikePowerFormat, NumberFormatter.Format(_context.Forge.ClickPower));
+
+            var rate = _context.Workforce.ForgePointsPerSecond;
+            _rateLabel.text = rate > 0 ? string.Format(passiveRateFormat, NumberFormatter.Format(rate)) : noPassiveText;
+        }
     }
 }

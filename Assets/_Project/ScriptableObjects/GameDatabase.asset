@@ -15,3 +15,18 @@ MonoBehaviour:
   balance: {fileID: 11400000, guid: 4f065be69d981a441bf669d2c0f6485b, type: 2}
   weapons:
   - {fileID: 11400000, guid: f55e2f88f032c0c44b1632ae84089052, type: 2}
+  upgrades:
+  - {fileID: 11400000, guid: 7d89e18c3e8c805438966a5d707da8d2, type: 2}
+  - {fileID: 11400000, guid: 97fb8757ae1d1f0429fb190e9df2c329, type: 2}
+  - {fileID: 11400000, guid: 5be5328fdf6673b41b10b9e6614e714a, type: 2}
+  - {fileID: 11400000, guid: 4535347a0cfe9974f90565347e2196d8, type: 2}
+  - {fileID: 11400000, guid: 59be17ecdf853d84caed397808462ff9, type: 2}
+  - {fileID: 11400000, guid: b05e7efbebe564d43b53a5ad0c800a17, type: 2}
+  - {fileID: 11400000, guid: 4bb5d1afdc540f6418dae87b90c5944b, type: 2}
+  - {fileID: 11400000, guid: cda9c12fbb4b9264790f044090b9e75b, type: 2}
+  - {fileID: 11400000, guid: d27b712c718cd2b448fb9146e40f41a0, type: 2}
+  apprentices:
+  - {fileID: 11400000, guid: 3a78fa49001eb524780152eec06be20c, type: 2}
+  - {fileID: 11400000, guid: 1dee298fb8f2bf649b950fdbbf7af1fc, type: 2}
+  - {fileID: 11400000, guid: 12d4705801fc84947abd3e577a2427b9, type: 2}
+  - {fileID: 11400000, guid: 34874096f5163c24aa3476ee7165b3eb, type: 2}

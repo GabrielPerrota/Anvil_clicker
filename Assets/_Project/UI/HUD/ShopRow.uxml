@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="row" class="shop-row">
+        <ui:VisualElement class="shop-row__info">
+            <ui:VisualElement class="shop-row__header">
+                <ui:Label name="row-name" class="shop-row__name" text="-" />
+                <ui:Label name="row-level" class="shop-row__level" text="-" />
+            </ui:VisualElement>
+            <ui:Label name="row-detail" class="shop-row__detail" text="-" />
+        </ui:VisualElement>
+        <ui:Button name="row-buy" class="shop-row__buy">
+            <ui:Label name="row-quantity" class="shop-row__quantity" text="" picking-mode="Ignore" />
+            <ui:Label name="row-cost" class="shop-row__cost" text="-" picking-mode="Ignore" />
+        </ui:Button>
+    </ui:VisualElement>
+</ui:UXML>

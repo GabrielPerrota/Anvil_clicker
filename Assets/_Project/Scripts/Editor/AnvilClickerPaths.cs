@@ -17,13 +17,15 @@ namespace AnvilClicker.Editor
         public const string ScriptableObjects = Root + "/ScriptableObjects";
         public const string Weapons = ScriptableObjects + "/Weapons";
         public const string Balance = ScriptableObjects + "/Balance";
+        public const string Upgrades = ScriptableObjects + "/Upgrades";
+        public const string Apprentices = ScriptableObjects + "/Apprentices";
         public const string Settings = Root + "/Settings";
         public const string UI = Root + "/UI";
 
         public static readonly string[] AllFolders =
         {
             Root, Art, Placeholders, Materials, Tiles, Audio, Prefabs, Scenes,
-            ScriptableObjects, Weapons, Balance, Settings, UI,
+            ScriptableObjects, Weapons, Balance, Upgrades, Apprentices, Settings, UI,
             Root + "/Scripts", Root + "/Tests"
         };
 
@@ -42,6 +44,7 @@ namespace AnvilClicker.Editor
         public const string InputActions = Settings + "/Input/AnvilControls.inputactions";
 
         public const string HudUxml = UI + "/HUD/HUD.uxml";
+        public const string ShopRowUxml = UI + "/HUD/ShopRow.uxml";
         public const string RuntimeTheme = UI + "/Themes/AnvilRuntimeTheme.tss";
         public const string PanelSettings = UI + "/AnvilPanelSettings.asset";
 
