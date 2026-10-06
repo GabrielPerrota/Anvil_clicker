@@ -1,237 +1,200 @@
 # Anvil Clicker — Game Design Document
 
-> **Status:** v1, aprovada em 2026-10-03.
-> Decisões tomadas estão marcadas com ✅. Todos os números são **valores iniciais de balanceamento** e vão morar em ScriptableObjects.
+> **Status:** v2, **aprovada em 2026-10-06**. Substitui a v1 (aprovada em 2026-10-03), que era um incremental clássico.
+> **Por que mudou:** o foco agora é **missões, encomendas e uma economia pequena**, e não números enormes de dinheiro e armas.
+> Todos os números são **valores iniciais de balanceamento** e vão morar em ScriptableObjects. A direção visual está em [`ART_DIRECTION.md`](ART_DIRECTION.md).
 
 ## 1. Resumo
 
 | | |
 |---|---|
-| **Gênero** | Incremental / clicker com exploração leve |
+| **Gênero** | Gestão artesanal com missões (sim de oficina), com exploração leve |
+| **Pitch** | *Você herdou uma ferraria pequena, de portas abertas para a avenida mais movimentada da vila, num reino em crise. Atenda os clientes que passam, cumpra as missões do reino e faça a oficina prosperar.* |
 | **Plataforma** | PC (Windows) principal, com build WebGL para playtest. Mouse + teclado |
-| **Visual** | 2D isométrico (Tilemap + sprites). Placeholders até termos arte |
-| **Monetização** | Nenhuma (premium ou gratuito). Sem anúncios e sem IAP |
-| **Sessão típica** | 5–30 min ativos, com retorno idle/offline |
-| **Pitch** | *O reino está em chamas, e cada espada que sai da sua bigorna é mais um soldado na muralha.* |
+| **Visual** | 2D isométrico (Tilemap + sprites), pixel art. Uma pequena loja medieval aconchegante |
+| **Monetização** | Nenhuma |
+| **Sessão típica** | 10–30 min, com 2–6 "dias" de jogo |
 
 ## 2. Pilares
 
-1. **Cada golpe tem peso.** O click é o coração do jogo, com feedback forte (faíscas, som, números, shake e crítico).
-2. **A ferraria cresce de verdade.** O progresso é visível no espaço: salas, estações e aprendizes aparecem no mapa.
-3. **Otimizar com propósito.** As crises do reino dão motivo narrativo para ficar mais forte.
-4. **Respeito ao tempo do jogador.** Há progresso idle e offline, sem derrota e sem punição por ficar fora.
+1. **Cada peça importa.** Poucas armas, cada uma feita com atenção. Qualidade e escolha pesam mais que quantidade.
+2. **Pessoas e pedidos.** Clientes com nome, gostos e prazos dão motivo para forjar. Cumprir bem rende reputação.
+3. **Economia pequena e legível.** Preços de dezenas e centenas de moedas. Dá para entender cada número na tela.
+4. **A loja prospera.** Missões cumpridas melhoram a oficina, que fica visivelmente mais bonita e movimentada.
+5. **Respeito ao tempo.** Nada de punição pesada por ficar fora. Dá para parar a qualquer hora.
 
-## 3. Loops de jogo
+## 3. O loop
 
 ```mermaid
 flowchart LR
-    C[Golpes na bigorna] --> PF[Pontos de Forja]
-    A[Aprendizes - idle] --> PF
-    PF --> W[Arma pronta]
-    W -->|vender no balcão| G[Ouro]
-    W -->|entregar ao reino| R[Reputação + meta do capítulo]
-    G --> U[Upgrades / materiais / salas]
-    U --> C
-    U --> A
-    R --> D[Desbloqueios e história]
-    D --> U
+    A[Amanhece: quadro de encomendas] --> B[Escolher encomenda]
+    B --> C[Separar material]
+    C --> D[Forjar na bigorna: ritmo e calor]
+    D --> E[Peça com qualidade 1 a 5]
+    E --> F[Entregar no balcão]
+    F --> G[Moedas e reputação]
+    G --> H{Fim do dia?}
+    H -->|não| B
+    H -->|sim| I[Contas e resumo do dia]
+    I --> A
+    G -.-> J[Missão do reino avança]
+    J -.-> K[Novos materiais, salas e aprendizes]
 ```
 
 | Escala | Ação | Duração |
 |---|---|---|
-| Micro | Golpear, ver a arma ficar pronta | segundos |
-| Meso | Comprar upgrades, trocar a receita, vender e entregar | minutos |
-| Macro | Concluir capítulos, expandir a loja, novos materiais | horas |
-| Meta | Legado (prestígio) | dias |
+| Micro | Uma martelada no ritmo certo | segundos |
+| Meso | Forjar e entregar uma peça | 30–90 s |
+| Dia | 3–5 encomendas, contas no fim | 3–4 min |
+| Missão | Meta do reino com prazo em dias | 2–6 dias |
+| Capítulo | Uma crise inteira, com história | 30–60 min |
 
-## 4. Recursos
+## 4. A forja e a qualidade
 
-| Recurso | Como ganha | Para que serve |
+- Cada peça tem um número de **golpes** (6 a 16, conforme o tipo).
+- No **modo forja** (como já funciona: `E` na bigorna, câmera aproxima) aparece um **anel de ritmo** sobre a peça. Clicar (ou Espaço) quando o anel fecha dá **Perfeito**, **Bom** ou **Falho**.
+- O **calor** da peça cai com o tempo. Os **foles** (tecla `Q`) reacendem; golpear a peça fria vale menos. A forja melhor segura o calor por mais tempo.
+- **Qualidade final (★1 a ★5):** média ponderada dos golpes, mais bônus de material e de melhorias.
+- **Acessibilidade:** opção "forja tranquila" sem timing (qualidade fixa ★3, tempo maior) e opção de reduzir o screen shake.
+- O juice atual (faíscas, números, squash, shake no crítico) é mantido. O **crítico** vira o golpe **Perfeito**.
+
+| Qualidade | Preço | Como se mostra |
 |---|---|---|
-| **Pontos de Forja (PF)** | Clicks e aprendizes | Progresso da arma atual. Não é moeda |
-| **Ouro** | Venda de armas | Upgrades, materiais, salas, contratações |
-| **Armas** | Forja | Vender (ouro) ou entregar ao reino (reputação) |
-| **Materiais** | Comprados com ouro (comuns) ou recompensas (raros) | Definem o tier e o valor da arma |
-| **Reputação** | Entregas ao reino, capítulos | Desbloqueios (nível de favor). Não é gasta |
-| **Essência Arcana** (pós-MVP) | Capítulos, eventos, desencantar | Runas e itens mágicos |
-| **Marcas do Legado** (fim de jogo) | Prestígio | Bônus permanentes |
+| ★1 Tosca | ×0,6 | marca de martelada irregular |
+| ★2 Comum | ×0,85 | |
+| ★3 Boa | ×1,0 | brilho discreto |
+| ★4 Ótima | ×1,25 | brilho forte |
+| ★5 Obra-prima | ×1,6 | brilho dourado e nome gravado |
 
-## 5. A bigorna (click)
+## 5. Peças e materiais
 
-- A forja tem uma **receita ativa** (tipo de arma + material) que se repete automaticamente.
-- Cada arma exige uma quantidade de PF (ex.: Adaga de Ferro = 10 PF).
-- **Golpe** = poder do martelo × multiplicadores.
-- **Crítico:** 5% de chance, dano ×5 (ambos melhoráveis).
-- **Feedback (juice):**
-  - faíscas (partículas), som de martelo com variação de pitch e número flutuante (maior e dourado no crítico);
-  - squash & stretch na bigorna, screen shake leve (só no crítico) e barra de progresso;
-  - quando a arma fica pronta, ela "salta" para a prateleira.
-- **Acessibilidade:** opção para reduzir ou desligar o shake, e a tecla **Espaço** como alternativa ao click.
-- ✅ Sem limite de clicks/s (é single-player).
-
-## 6. Produção passiva — aprendizes
-
-| Ajudante | PF/s base | Custo base | Crescimento |
+| Peça | Golpes | Preço base | Material por peça |
 |---|---|---|---|
-| Aprendiz | 1 | 15 | 1,15 |
-| Ferreiro jornaleiro | 8 | 100 | 1,15 |
-| Ferreiro veterano | 47 | 1.100 | 1,15 |
-| Mestre ferreiro | 260 | 12.000 | 1,15 |
-| Armeiro real *(capítulo 2+)* | 1.400 | 130.000 | 1,15 |
+| Adaga | 6 | 14 | 1 |
+| Lança | 8 | 30 | 2 |
+| Espada curta | 8 | 32 | 2 |
+| Machado de guerra | 9 | 38 | 3 |
+| Escudo | 10 | 36 | 3 |
+| Maça | 9 | 40 | 3 |
+| Espada longa | 12 | 70 | 4 |
+| Alabarda | 14 | 90 | 5 |
 
-- **Marcos:** com 25, 50, 100 e 200 unidades de um tipo, a produção desse tipo dobra.
-- **Treinamentos** (upgrades únicos) multiplicam a produção de um tipo.
-- **Visual:** cada tipo contratado aparece como um sprite trabalhando numa bancada, com um contador em vez de N sprites.
+| Material | Custo por unidade | Multiplicador de preço | Liberado em |
+|---|---|---|---|
+| Ferro | 2 | ×1 | início |
+| Aço | 7 | ×2,2 | Capítulo 1 |
+| Mithril | 24 | ×5 | Capítulo 3 |
 
-## 7. Upgrades
+Estoque de material é **limitado e comprado** no Depósito (preço varia um pouco por dia). Não existe "material infinito".
 
-| Categoria | Efeito | Exemplo |
+## 6. Clientes e encomendas
+
+- **Os clientes chegam pela avenida** (ver §6.1) e vão até o balcão. Cada encomenda tem: **cliente**, **peça**, **material mínimo**, **qualidade mínima**, **prazo** (em dias), **preço** e, às vezes, **gorjeta** por entregar antes.
+- Clientes têm perfil: **Guarda da vila** (peças simples, boa paga, exige qualidade ★3), **Caçador** (lanças, machados), **Aldeã** (utensílios e reparos, paga pouco, dá muita reputação), **Mercador** (lotes e revenda), **Cavaleiro** (espadas longas, ★4+).
+- **Recusar** é permitido, com pequena perda de reputação com aquele cliente. **Falhar o prazo** perde mais.
+- A reputação por **facção** (Guarda, Aldeões, Reino) libera clientes e encomendas melhores.
+
+### 6.1 A avenida (a loja é um comércio de verdade)
+
+A fachada da loja é **aberta para uma avenida movimentada**, onde pessoas passam para lá e para cá o dia todo. A loja está **no meio do comércio**, não isolada.
+
+- **Vida na rua:** aldeões, crianças, guardas, mercadores, monges e cães andam pela avenida em rotas de ida e volta, com pausas para olhar a vitrine. A densidade varia com a hora do dia (mais gente de manhã e à tarde, pouca à noite, com lampiões acesos).
+- **Clientes na fila:** quem tem uma encomenda **sai do fluxo da rua, entra na fila do balcão** e aparece com um indicador acima da cabeça (a peça pedida e a cor do prazo). A encomenda só vai para o quadro depois que o cliente chega.
+- **A vitrine importa:** peças expostas e boas entregas atraem mais clientes e melhores. Com o tempo a fachada melhora (placa nova, toldo, vasos) e a rua fica mais movimentada.
+- **Escopo:** o ferreiro **não sai** para a rua (por enquanto); ele atende pelo balcão voltado para a avenida. A rua é vista, ouvida e habitada. Passear por ela pode virar uma expansão futura.
+
+## 7. Missões do reino (campanha)
+
+Cartas do rei/capitão trazem metas **pequenas e específicas** com prazo. Concluir um capítulo conta uma parte da história e libera conteúdo.
+
+| # | Crise | Meta (exemplo) | Recompensas |
+|---|---|---|---|
+| 1 | **Bandidos na Estrada do Rei** | 6 adagas ★2+ e 4 espadas curtas ★3+ em 6 dias | Aço, Depósito, 1º aprendiz |
+| 2 | **O Cerco Orc** | 8 lanças de aço ★3+ e 6 escudos ★3+ em 8 dias | Sala dos aprendizes, 2º aprendiz, melhorias |
+| 3 | **A Praga dos Mortos-Vivos** | 6 maças de aço ★4+ e lote de 10 peças simples para a vila | Mithril, reputação máxima com Aldeões |
+| 4 | **O Despertar do Dragão** | 4 espadas longas de mithril ★4+ e 1 obra-prima ★5 | Final da campanha, 3º aprendiz |
+
+- Sem derrota: se o prazo estoura, o rei dá mais tempo com **custo de reputação** (e a história reage).
+- Entre capítulos há **missões secundárias**: pedidos de clientes recorrentes, reparos para a vila e eventos (mercador viajante, encomenda urgente).
+
+## 8. A oficina
+
+**Salas** (cada uma aparece fisicamente no mapa):
+- **Oficina** (início): bigorna, forja, mesa de melhorias, balcão, quadro de encomendas.
+- **Depósito** (Cap. 1): estoque e compra de material.
+- **Quarto dos aprendizes** (Cap. 2): moradia dos 2º e 3º aprendizes.
+- **Sala de runas** (pós-MVP): encantamentos.
+
+**Aprendizes** (no máximo 3, com nome e talento; cada um tem **salário diário**):
+| Nome | Talento | Efeito |
 |---|---|---|
-| **Martelos** | +poder do click | Madeira → Ferro → Aço → Mithril → Rúnico |
-| **Forja (calor)** | Multiplicador global de PF (click + idle) | Foles, carvão de pedra, forja de lava |
-| **Aprendizes** | Contratar unidades / treinamentos | Ver §6 |
-| **Precisão** | Chance e dano de crítico | Olho do mestre |
-| **Comércio** | +valor de venda, venda automática | Vendedor de balcão, contrato com a guilda |
-| **Expansão** | Novas salas e estações | Depósito, alojamento, sala de runas |
+| Tomás | Martelador | Ajuda a forjar peças simples (faz o trabalho de ½ peça por dia, ★2) |
+| Inês | Acabamento | +1 nível de qualidade em até 2 peças por dia |
+| Bento | Fornalheiro | A peça esfria mais devagar; mantém a forja acesa |
 
-- **Custo:** `custo(n) = base × r^n`, com `r` entre 1,07 e 1,15 conforme a categoria.
-- **Compra em lote:** ×1 / ×10 / ×100 / Máx. Usa a soma geométrica, sem loop.
+**Melhorias** (~12, de **nível e custo fixos**, uma compra cada ou 2–3 níveis): Martelo de ferro → aço → mestre, Foles, Carvão de pedra, Bigorna de mestre, Tonel de têmpera, Esmeril, Prateleira de armas, Janela e lanternas (luz), Ferramentas na parede, Placa da loja. Custam **30 a 600 coroas**, sem crescimento exponencial.
 
-## 8. Materiais e catálogo de armas
+## 9. Economia (números-alvo)
 
-**Materiais (tiers):**
+- **Moeda:** coroas. No início, 40 coroas.
+- **Renda do dia:** ~80 no começo, ~250 no fim do Cap. 1, ~600 no Cap. 3, ~1.500 no fim do jogo.
+- **Contas diárias:** aluguel 10 + salários (0 / 12 / 25 / 40 conforme aprendizes) + manutenção da forja.
+- **Teto realista:** dezenas de milhares de coroas ao fim da campanha. `NumberFormatter` continua existindo (separador de milhar), mas `K/M/B` quase não aparece.
+- **Anti-inflação:** preços de material sobem de leve com o estoque comprado no dia; encomendas ficam mais exigentes (qualidade), não mais numerosas.
 
-| Tier | Material | Mult. valor | Mult. PF | Desbloqueio |
-|---|---|---|---|---|
-| 1 | Ferro | ×1 | ×1 | Início |
-| 2 | Aço | ×6 | ×4 | Capítulo 1 |
-| 3 | Mithril | ×40 | ×20 | Capítulo 2 |
-| 4 | Orichalcum (arcano) | ×300 | ×110 | Capítulo 3 |
-| 5 | Aço-estelar (arcano) | ×2.500 | ×700 | Capítulo 4 |
+## 10. Eventos e conquistas (leves)
 
-A relação valor/PF cresce a cada tier, então vale a pena subir de material.
+- **Mercador viajante:** passa um dia na vila vendendo material raro ou comprando peças.
+- **Encomenda urgente:** prazo curto, gorjeta alta.
+- **Festival da vila:** muita procura por peças decorativas.
+- **Conquistas:** marcos pequenos (primeira ★5, 20 clientes atendidos, todas as melhorias) com um bônus simbólico (um enfeite na loja).
 
-**Tipos de arma:** Adaga, Espada curta, Lança, Machado de guerra, Escudo, Maça, Espada longa e Alabarda. Cada um tem PF base e valor base próprios. Alguns capítulos exigem tipos específicos.
+## 11. Tempo e progresso offline
 
-**Arma** = Tipo × Material, calculada (sem um asset para cada combinação).
+- O **dia só passa com o jogo aberto.** Fechar o jogo **não** estoura prazos.
+- Ao voltar, os **aprendizes terminam peças que já estavam em fila** (limite: o que cabe em 1 dia de trabalho de cada um) e um resumo mostra o que ficou pronto. Nada de ganhos gigantes.
+- O save continua versionado, com autosave, escrita atômica e backup.
 
-**Custo do material** ✅: debitado do ouro automaticamente quando cada arma começa. Se faltar ouro, a forja pausa. Materiais arcanos (tier 4+) têm estoque próprio e vêm de recompensas e eventos.
+## 12. Controles
 
-## 9. Balcão de vendas
+- **WASD/setas** andam; **E** usa a estação; **Esc** fecha painéis/sai do modo forja; **scroll** muda o zoom; **click** numa estação faz o ferreiro andar até ela.
+- Modo forja: **click/Espaço** golpeia no ritmo; **Q** acende os foles.
 
-- Armas prontas vão para a prateleira (estoque).
-- No início a venda é manual no balcão, o que dá motivo para andar pela loja. O upgrade **Vendedor** (barato, ~5 min de jogo) automatiza a venda.
-- Cada tipo de arma pode ser marcado como **"reservar para o reino"** para não ser vendido.
+## 13. Linguagem e números
 
-## 10. A loja isométrica (exploração)
+- Textos externalizados desde o início, pt-BR primeiro e inglês depois.
+- `NumberFormatter` mantido (pt-BR), com notação científica opcional nas configurações.
 
-**Salas:**
-- Oficina principal: bigorna, forja, balcão, mesa do mensageiro.
-- Depósito.
-- Alojamento dos aprendizes.
-- Sala de runas *(pós-MVP)*.
-- Câmara arcana *(pós-MVP)*.
-- Salão do Legado *(fim de jogo)*.
+## 14. Escopo do MVP (`v0.1.0`)
 
-**Controles (proposta):**
-- **WASD** relativo à tela, em 8 direções, com animação nas 4 direções isométricas.
-- **E** ou **click numa estação**: o ferreiro anda até ela (A* no grid) e abre o painel.
-- **Esc** fecha painéis.
-- **Modo forja:** ao interagir com a bigorna, a câmera aproxima. A partir daí, clicks na bigorna (ou Espaço) são golpes. Andar com WASD sai do modo.
+**Inclui:** identidade visual (loja medieval aberta para a avenida, com pedestres, + ferreiro), dia, quadro de encomendas, forja com qualidade, estoque e balcão, o **Capítulo 1** completo com cartas e recompensas, 1 aprendiz, 6 melhorias, save e WebGL.
+**Fora:** capítulos 2–4, runas, eventos, conquistas, mithril, legado.
 
-Escolhi WASD em vez de click-to-move puro porque o click do mouse já é o golpe na bigorna. Os dois juntos causariam conflito.
+## 15. Legado (pós-MVP, a redesenhar)
 
-**Câmera e expansão:**
-- A câmera segue o ferreiro com suavização, respeita os limites do mapa e tem 2–3 níveis de zoom (scroll).
-- Ao comprar uma sala, os tiles e as estações aparecem com animação (poeira e construção).
-- O upgrade **Sino do Capataz** permite abrir painéis à distância. Ele reduz o atrito depois que o jogador já conhece a loja.
+A ideia anterior (marcas que multiplicam produção) **sai**. Se houver um sistema de legado, será pequeno e narrativo (por exemplo, passar a loja para o próximo da família, com 1–2 bônus simbólicos).
 
-## 11. Crises do reino (capítulos)
+## 16. Registro de decisões
 
-| # | Crise | Metas (exemplo) | Recompensas |
-|---|---|---|---|
-| 1 | **Bandidos na Estrada do Rei** | 25 Adagas + 15 Espadas curtas de ferro | Aço, sala Depósito, +reputação |
-| 2 | **O Cerco Orc** | 40 Lanças + 30 Escudos de aço | Mithril, Armeiro real, Alojamento |
-| 3 | **A Praga dos Mortos-Vivos** | 50 Maças de mithril com runa Sagrada | Orichalcum, Câmara arcana |
-| 4 | **O Despertar do Dragão** | Armas de mithril+ com runa de Gelo e 1 item mágico lendário | Aço-estelar, desbloqueia o **Legado** |
+| Tema | Decisão | Data |
+|---|---|---|
+| Visual | Tilemap 2D isométrico + sprites | 2026-10-03 |
+| Plataforma | PC (Windows) + WebGL | 2026-10-03 |
+| Monetização | Nenhuma | 2026-10-03 |
+| Idioma | pt-BR primeiro, textos externalizados | 2026-10-03 |
+| Golpes | Só no modo forja, perto da bigorna | 2026-10-04 |
+| Loja de melhorias | Abre numa estação (Mesa de Melhorias) | 2026-10-04 |
+| Arte | Pixel art por código, com agente de direção de arte | 2026-10-06 |
+| **Foco do jogo** | **Missões, encomendas e economia pequena (design v2)** | **2026-10-06** |
+| **Fachada** | **Loja aberta para uma avenida movimentada; clientes chegam pela rua** | **2026-10-06** |
+| Ferreiro | Fixo: Mestre Baldo (48 px, barbudo, lenço vermelho-ferrugem) | 2026-10-06 |
+| Câmera | Zoom inteiro (2× normal, 3× no modo forja) | 2026-10-06 |
+| Fonte da UI | Fonte pixel OFL (com aprovação no momento do download) | 2026-10-06 |
+| Prosperidade | 3 estágios ligados a capítulos e melhorias; luz da janela segue o dia/noite | 2026-10-06 |
 
-- Cada capítulo tem uma carta do rei (texto + retrato), 1–3 metas de entrega no **Mensageiro do Rei** e recompensas.
-- **Sem derrota:** o tempo é ilimitado.
-- ✅ Bônus pequeno por concluir rápido (ex.: +50% de reputação abaixo de X min).
+## 17. Questões em aberto
 
-## 12. Runas e magia *(pós-MVP)*
-
-- **Bancada de runas:** gravar uma runa na receita ativa aplica um multiplicador de valor e uma tag de efeito (Fogo, Gelo, Sagrado, Raio, Sombra). Os capítulos pedem essas tags.
-- O custo é Essência Arcana por arma, ou fixo por receita (a definir no M6).
-- **Combinação:** duas runas formam uma composta (Fogo + Raio = Tempestade), com receitas descobertas por experimentação.
-- **Itens mágicos raros:** receitas especiais, de alto PF e alto valor, exigidas por capítulos.
-
-## 13. Eventos e recompensas
-
-- **Faísca dourada:** aparece aleatoriamente na tela. Clicando nela, o jogador ganha um bônus temporário (×7 de PF por 30 s, por exemplo).
-- **Mercador viajante:** fica 2 min no balcão vendendo material raro ou bônus temporários.
-- **Encomenda urgente do rei:** entregar N armas em T minutos rende ouro e reputação extras.
-- **Conquistas:** marcos como 100 armas ou 1M de ouro. ✅ Cada uma dá +1% de produção.
-
-## 14. Progresso offline
-
-- Ao voltar, o jogo calcula o tempo fora pelo relógio UTC.
-- **Teto inicial de 8 h** (upgrades levam até 24 h) e **eficiência de 50%** (upgrades levam até 100%).
-- **Cálculo:**
-  1. PF/s passivo × tempo × eficiência;
-  2. o resultado vira armas da receita ativa, respeitando o custo de material;
-  3. as armas são vendidas se houver vendedor automático.
-- **Tela de resumo:** tempo fora, armas forjadas e ouro ganho.
-- Se o relógio do sistema voltou no tempo, o ganho é zero.
-
-## 15. Legado (prestígio, fim de jogo)
-
-- Fica disponível após o capítulo 4.
-- **Reinicia:** ouro, upgrades, aprendizes, salas, capítulos e materiais.
-- **Mantém:** Marcas do Legado, conquistas e runas descobertas.
-- **Marcas:** `floor(sqrt(reputaçãoTotal / 1e6))`. Cada marca dá +2% de produção global.
-- ✅ Árvore de talentos do Legado, gastando marcas, no M8.
-- NG+ (capítulos repetidos com metas escaladas): a decidir no M8.
-
-## 16. Números e formatação
-
-- Abreviação curta: `1.234` → `12,3K` → `4,56M` → B, T, Qa, Qi, Sx, Sp, Oc, No, Dc; depois `aa`, `ab`, ...
-- Notação científica opcional nas configurações (`1,23e45`).
-- ✅ **Idioma do jogo:** textos externalizados desde o início, com pt-BR primeiro e inglês depois.
-
-## 17. Arte e áudio
-
-- **Placeholders:** um Editor script gera sprites simples (losangos para os tiles, formas coloridas para as estações e o ferreiro).
-- **Luz:** URP 2D Lights para o brilho pulsante da forja e das faíscas, o que dá muito efeito com pouca arte.
-- **Áudio:** placeholder ou silêncio até a sua aprovação. Nenhum asset (nem CC0) entra sem você aprovar.
-
-## 18. Escopo do MVP (v0.1.0)
-
-**Inclui:**
-- click com juice e ouro;
-- upgrades de martelo, forja, precisão e comércio;
-- 3–4 tipos de aprendiz;
-- loja isométrica com a oficina mais 1 expansão (Depósito);
-- WASD + interação;
-- ferro e aço, com 6 tipos de arma;
-- balcão de vendas;
-- **capítulo 1**;
-- save JSON com autosave e progresso offline.
-
-**Fora:** runas, magia, capítulos 2–4, eventos, conquistas, Legado e áudio/arte finais.
-
-## 19. Registro de decisões (2026-10-03)
-
-| Tema | Decisão |
-|---|---|
-| Visual | Tilemap 2D isométrico + sprites |
-| Plataforma | PC (Windows) + build WebGL para playtest |
-| Monetização | Nenhuma |
-| MVP | M1–M4 + capítulo 1 (tag `v0.1.0` ao fim do M5) |
-| Custo de material | Debitado do ouro automaticamente a cada arma (§8) |
-| Capítulo rápido | Bônus pequeno de reputação |
-| Conquistas | +1% de produção cada |
-| Idioma | Textos externalizados; pt-BR primeiro, inglês depois |
-| Legado | Árvore de talentos no M8; NG+ a decidir no M8 |
-
-**Ainda em aberto:** custo das runas (M6) e NG+ (M8).
+1. O ritmo da forja deve ser **timing de um anel** (proposto) ou algo mais passivo (ex.: manter o calor num intervalo)?
+2. Quantos **dias** deve durar um capítulo (proposto: 6 a 10)?
+3. Falhar um prazo deve ter **consequência narrativa** forte (proposto) ou só custo de reputação?
+4. Os aprendizes devem poder **sair** se o salário atrasar?

@@ -1,124 +1,96 @@
 # Anvil Clicker — Roadmap
 
-> **Status:** v1, aprovada em 2026-10-03.
+> **Status:** v2, **aprovada em 2026-10-06**. Acompanha o [GDD v2](GDD.md): o jogo agora gira em torno de **encomendas, missões do reino e uma economia pequena**.
 > Cada milestone vira uma Milestone no GitHub. Cada item `- [ ]` vira uma issue.
 
-## Mudanças em relação ao roadmap original
+## O que mudou em relação à v1
 
 | Mudança | Motivo |
 |---|---|
-| **Save básico + progresso offline foram para o M2** | Um jogo idle sem save é impossível de testar por mais de uma sessão. O offline é uma função pura, barata, e entra junto com o save |
-| **Capítulos (crises) vieram para o M5; runas foram para o M6** | O MVP aprovado inclui o capítulo 1, e a crise dá propósito ao loop antes da magia |
-| **M7 ficou com conquistas, eventos e capítulos 2–4** | Conteúdo que depende de runas (cap. 3 e 4) |
-| **MVP = tag `v0.1.0` ao fim do M5**, com build WebGL para playtest | Escopo aprovado: M1–M4 + capítulo 1 |
+| M4–M8 foram redesenhados em torno de encomendas, qualidade e missões | O jogo deixou de ser um clicker de números enormes |
+| Novo **M3.5 Identidade visual** antes do M4 | A loja precisa parecer uma oficina medieval de verdade, com um ferreiro marcante |
+| Runas e magia saíram do caminho do MVP | Entram depois, quando o loop de encomendas estiver sólido |
+| `Legado` (prestígio com bônus enormes) foi removido do roadmap | Não combina com a economia pequena. Pode voltar como algo narrativo |
+| **MVP = `v0.1.0` ao fim do M5** | Visual novo + encomendas + Capítulo 1 jogável |
 
 ## Fluxo de branches
 
-- Para cada milestone: `develop` → `feature/<nome>` → PR para `develop` (squash ou merge com Conventional Commits).
-- Ao fim de milestones-chave: `develop` → `main`, com tag.
-- Versões: `v0.0.x` durante o M1–M4, **`v0.1.0` = MVP**, `v0.x` nas milestones seguintes e `v1.0.0` no fim do M8.
+- Para cada milestone: `develop` → `feature/<nome>` → merge `--no-ff` em `develop`.
+- Ao fim de cada milestone estável: `develop` → `main`, com tag.
+- Versões: `v0.0.x` até o MVP, **`v0.1.0` = MVP**, `v0.x` depois e `v1.0.0` no fim do M8.
 
 ---
 
 ## M0 — Planejamento ✅
-- [x] Ler o repositório e levantar o estado
-- [x] Decisões: visual, plataforma, monetização, MVP
-- [x] Aprovar GDD, ARCHITECTURE e ROADMAP
-
 ## M1 — Fundação e o primeiro golpe ✅ (`v0.0.1`, `v0.0.2`)
-**Meta:** abrir o projeto, clicar na bigorna e ver o ouro subir.
-- [x] `chore`: `.gitignore` Unity, `.gitattributes` (LFS + text), Force Text, README, CHANGELOG, CLAUDE.md
-- [x] `chore`: projeto Unity 6 LTS + URP 2D Renderer + Input System + Test Framework
-- [x] `feat(editor)`: `Setup/Create Folders`, `Setup/Configure Project`, asmdefs
-- [x] `feat(core)`: `GameState`, `Wallet`, `ForgeService` (golpe, crítico, conclusão), `IClock`/`IRandom`
-- [x] `feat(core)`: `NumberFormatter` (K, M, B...)
-- [x] `feat(data)`: SOs mínimos (arma, balanceamento, database) para não ter números mágicos no código
-- [x] `feat(runtime)`: `GameBootstrap` (composition root) + input da bigorna. O `GameLoop` (tick) vai para o M2, junto com o idle
-- [x] `feat(ui)`: HUD em UI Toolkit (ouro, barra de progresso)
-- [x] `feat(fx)`: juice v1 (faíscas, número flutuante, squash, shake no crítico)
-- [x] `feat(editor)`: placeholder sprites + `Scenes/Build Workshop Scene` (versão mínima: bigorna + câmera)
-- [x] `test`: Forge, Wallet, NumberFormatter
-
-**Pronto quando:** dá Play, cada click forja uma adaga de ferro, ela é vendida automaticamente e o ouro aparece formatado. Os testes passam.
-No M1 a venda é automática e só existe uma arma, porque balcão e catálogo vêm depois.
+Projeto Unity, repositório, click na bigorna, HUD, juice, testes.
 
 ## M2 — Economia, idle e persistência ✅ (`v0.0.3`)
-**Meta:** o loop incremental de verdade, que sobrevive a fechar o jogo.
-- [x] `feat(core)`: `EconomyFormulas` (custo geométrico, lote, máx)
-- [x] `feat(core)`: `ModifierStack` + `UpgradeService` (martelos, forja, precisão)
-- [x] `feat(core)`: `WorkforceService` (aprendizes, PF/s, marcos)
-- [x] `feat(data)`: SOs `UpgradeDefinition`, `ApprenticeDefinition`, `GameBalanceConfig`, `GameDatabase` + `Data/Generate Sample Data`
-- [x] `feat(ui)`: painel de upgrades e aprendizes (×1/×10/×100/Máx)
-- [x] `feat(save)`: SaveSystem JSON versionado, escrita atômica, `.bak`, autosave
-- [x] `feat(core)`: `OfflineProgressCalculator` + modal de resumo
-- [x] `feat(editor)`: `Data/Validate Database`, `Save/*`, `Debug/Add Gold`
-- [x] `test`: fórmulas, modificadores, save/migração, offline
-- [ ] `chore`: primeiro build WebGL (validar o save no IndexedDB). **Adiado para o início do M3**
+Fórmulas de custo, modificadores, melhorias, aprendizes, save JSON versionado, offline, loja. *Boa parte da infraestrutura (carteira, modificadores, save, validação de dados) é reaproveitada na v2.*
 
-**Pronto quando:** dá para jogar 30 min, fechar, voltar e ver o resumo offline correto.
+## M3 — A loja isométrica ✅ (`v0.0.4`)
+**Meta:** andar pela ferraria e usar as estações.
+- [x] Grade isométrica, paredes com colisão, ordenação por Y
+- [x] Ferreiro com WASD relativo à tela e 4 direções
+- [x] Estações com prompt "E": Bigorna, Forja, Mesa de Melhorias, Balcão, Mensageiro, Depósito
+- [x] Modo forja na bigorna (zoom e golpes só ali)
+- [x] A* + clique na estação para andar até ela
+- [x] Câmera com follow, limites e zoom
+- [x] Salas compráveis que surgem no mapa com animação
+- [x] Luz da forja que reage às melhorias
+- [x] `-saveDir` para rodar sem tocar no save real
+- [x] Build WebGL e persistência do save no navegador (IndexedDB via `FS.syncfs`)
 
-## M3 — A loja isométrica
-**Meta:** andar pela ferraria e interagir com as estações.
-- [ ] `feat(world)`: Grid isométrico, tilemaps Floor e Walls, sorting por eixo Y
-- [ ] `feat(world)`: player com WASD relativo à tela + animação em 4 direções (placeholder)
-- [ ] `feat(world)`: `Interactable` + estações (Bigorna, Forja, Mesa de Melhorias, Balcão, Mensageiro) com prompt "E"; a loja abre na Mesa de Melhorias
-- [ ] `feat(world)`: modo forja na bigorna (zoom de câmera, golpes)
-- [ ] `feat(core)`: `IsoGridPathfinder` (A*) + click na estação → caminhar e interagir
-- [ ] `feat(camera)`: follow, limites, zoom
-- [ ] `feat(world)`: `RoomService` + `RoomBuilder`: comprar o Depósito faz a sala aparecer com animação
-- [ ] `feat(fx)`: Light2D da forja (pulsante, mais forte com o upgrade de calor)
-- [ ] `feat(editor)`: `Build Workshop Scene` completo e idempotente
-- [ ] `test`: pathfinder, regras de desbloqueio de sala
-- [ ] `chore`: primeiro build WebGL (validar o save no IndexedDB), vindo do M2
-- [ ] `feat(runtime)`: argumento `-saveDir` para rodar o jogo sem tocar no save real
+## M3.5 — Identidade visual
+**Meta:** a oficina parece uma pequena loja medieval aconchegante, com um ferreiro inconfundível, e os números do jogo atual ficam pequenos.
+- [ ] `docs/ART_DIRECTION.md` (guia de estilo) escrito pelo agente de direção de arte
+- [ ] **Novo ferreiro:** sprite maior, 4 direções, caminhada de 4 quadros, martelada, parado
+- [ ] **Fachada aberta e avenida:** vitrine com toldo e placa, calçamento, lampiões, barracas ao fundo, **pedestres** ambiente andando pela rua (ida e volta, com pausas)
+- [ ] **Cenário:** paredes de reboco com vigas e janela, piso de tábuas e pedra, ferramentas penduradas, barris, caixotes, prateleira, balança
+- [ ] Forja, bigorna, balcão e mesas redesenhados; sombras de contato
+- [ ] Suporte a props decorativos (sem colisão) em `RoomDefinition`/`RoomBuilder` e a animação do `PlayerController`
+- [ ] **Rebalanceamento de transição:** melhorias com nível máximo baixo e custo suave, no máximo 3 aprendizes, preços e metas pequenos
+- [ ] Capturas antes e depois; testes verdes
 
-**Pronto quando:** você anda, abre cada painel na estação certa e compra uma sala que surge no mapa.
+**Pronto quando:** uma captura de 1280 × 720 passa no checklist do guia de arte e o jogo atual já parece "pequeno".
 
-## M4 — Materiais e catálogo de armas
-**Meta:** variedade e decisões de produção.
-- [ ] `feat(data)`: `WeaponTypeDefinition` (6 tipos), `MaterialDefinition` (ferro, aço)
-- [ ] `feat(core)`: receita ativa (tipo × material), custo de material, valor e PF calculados
-- [ ] `feat(core)`: `InventoryService` + `SalesService` (balcão manual, upgrade Vendedor, reservas)
-- [ ] `feat(ui)`: seletor de receita na bigorna, prateleira, painel do balcão
-- [ ] `feat(world)`: armas prontas aparecem na prateleira (sprites placeholder)
-- [ ] `test`: valor/PF por receita, venda, reserva, offline com custo de material
+## M4 — Encomendas e clientes
+**Meta:** o loop novo: encomenda → forja com qualidade → entrega → pagamento → contas do dia.
+- [ ] `DayClock`: ciclo de dia (3–4 min), resumo e contas (aluguel, salários)
+- [ ] **Clientes chegam pela avenida**, entram na fila do balcão (indicador da peça e do prazo) e só então a encomenda entra no quadro
+- [ ] Clientes e **quadro de encomendas** (gerador por perfil, prazo, preço, qualidade mínima, gorjeta)
+- [ ] **Forja com qualidade:** anel de ritmo, calor, foles, resultado ★1–5 (Core testável)
+- [ ] Peças e materiais (ferro e aço); estoque; compra de material no Depósito
+- [ ] **Inventário e balcão:** guardar peças, entregar encomendas
+- [ ] Reputação por facção (base)
+- [ ] Migração do save (v1 → v2) e adaptação de `Workforce`/`Offline` ao novo modelo
+- [ ] Testes: qualidade, preço, geração de encomendas (com `IRandom`), contas, save/migração
 
-**Pronto quando:** escolher aço em vez de ferro é uma decisão real, visível no ouro/min.
+**Pronto quando:** dá para jogar 3 dias seguidos atendendo clientes e fechando as contas.
 
-## M5 — Crise 1: Bandidos na Estrada 🎯 **MVP v0.1.0**
-**Meta:** o primeiro capítulo completo, do começo ao fim.
-- [ ] `feat(data)`: `ChapterDefinition` (carta, metas, recompensas)
-- [ ] `feat(core)`: `ChapterService` (entregas, progresso, conclusão, desbloqueios, reputação)
-- [ ] `feat(ui)`: carta do rei (modal), painel do Mensageiro, rastreador de metas no HUD
-- [ ] `feat(content)`: capítulo 1 + balanceamento do MVP (meta: ~45–60 min até concluir)
-- [ ] `test`: metas, entrega, recompensa, save do capítulo
-- [ ] `chore`: build WebGL de playtest + release `v0.1.0`
+## M5 — Missões do reino · MVP `v0.1.0`
+**Meta:** o Capítulo 1 completo, do começo ao fim.
+- [ ] `ChapterService` e `QuestService`: metas, prazos, entrega, falha e prorrogação
+- [ ] Cartas do rei (UI), rastreador de metas e mensageiro funcional
+- [ ] Capítulo 1 (Bandidos na Estrada) com recompensas: aço, Depósito, 1º aprendiz
+- [ ] Balanceamento do MVP (~45 min até concluir o capítulo)
+- [ ] Build WebGL de playtest e release `v0.1.0`
 
-**Pronto quando:** um jogador novo conclui o capítulo 1 sem ajuda, em cerca de 1 h.
+**Pronto quando:** um jogador novo conclui o Capítulo 1 sem ajuda.
 
-## M6 — Runas e magia
-- [ ] Essência Arcana (fonte e consumo)
-- [ ] Bancada de runas (sala) + gravar runa na receita
-- [ ] Runas base (Fogo, Gelo, Sagrado, Raio, Sombra) + tags nas armas
-- [ ] Combinação de runas + descoberta de receitas
-- [ ] Itens mágicos raros
-- [ ] Mithril (tier 3)
-- [ ] Testes de multiplicadores e combinações
+## M6 — Oficina viva
+- [ ] 3 aprendizes com nome, talento e salário
+- [ ] Todas as melhorias (~12) e a loja que melhora visualmente (3 níveis)
+- [ ] Quarto dos aprendizes; clientes recorrentes; reputação completa
 
-## M7 — Conteúdo, eventos e conquistas
-- [ ] Capítulos 2 (Orc), 3 (Mortos-vivos) e 4 (Dragão) + materiais arcanos
-- [ ] Faísca dourada, Mercador viajante, Encomenda urgente
-- [ ] Conquistas (SO) + painel + bônus
-- [ ] Upgrades de offline (teto/eficiência) e do Sino do Capataz
-- [ ] Testes de eventos (com `IRandom`/`IClock`) e conquistas
+## M7 — Capítulos 2–4 e eventos
+- [ ] Capítulos 2 (Cerco Orc), 3 (Praga) e 4 (Dragão), mithril
+- [ ] Eventos (mercador viajante, encomenda urgente, festival) e conquistas leves
 
-## M8 — Legado, balanceamento e polimento → **v1.0.0**
-- [ ] Legado: cálculo de marcas, reset, bônus permanentes, Salão do Legado
-- [ ] Árvore de talentos do Legado (se aprovada)
-- [ ] Balanceamento com planilha/simulação (Editor tool que simula N horas)
-- [ ] Juice v2: VFX, áudio, trilha, transições
-- [ ] Configurações (volume, shake, notação, idioma), acessibilidade
-- [ ] Build PC final + WebGL
+## M8 — Polimento · `v1.0.0`
+- [ ] Áudio e trilha, transições, acessibilidade (forja tranquila, shake), idiomas
+- [ ] Balanceamento por simulação, builds finais PC e WebGL
+- [ ] Pós-MVP opcional: runas e magia, legado narrativo
 
 ---
 
@@ -126,8 +98,8 @@ No M1 a venda é automática e só existe uma arma, porque balcão e catálogo v
 
 | Risco | Mitigação |
 |---|---|
-| Não opero o Editor | Editor scripts geradores e idempotentes, e passos manuais numerados ao fim de cada tarefa |
-| Sorting isométrico 2D (personagem atrás e na frente de objetos) | Custom Axis + pivô nos pés + `SortingGroup`, validado cedo no M3 |
-| Persistência no WebGL | Teste de build já no M2 |
-| Balanceamento de incremental | Valores em SOs + tool de simulação no M8 + playtests a cada milestone |
-| Arte placeholder por muito tempo | Pipeline de sprites pensado para trocar o PNG sem mexer em prefabs |
+| Pixel art por código tem teto de qualidade | Guia de arte, iteração com capturas; saída: pack de assets escolhido pelo usuário |
+| Pivô de design mexe em sistemas prontos | Reaproveitar `Wallet`, `ModifierStack`, save e validador; migração de save com `ISaveMigration` |
+| Ritmo da forja pode cansar | Opção "forja tranquila" e ajuste de dificuldade; playtest cedo no M4 |
+| Persistência no WebGL | Teste no navegador antes do M4 |
+| Ordenação isométrica (personagem × paredes) | Eixo Y customizado, pivôs nos pés, validação por captura |
