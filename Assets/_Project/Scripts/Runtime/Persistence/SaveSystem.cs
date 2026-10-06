@@ -51,6 +51,7 @@ namespace AnvilClicker.Runtime
                 File.Move(SavePath, BackupPath);
             }
             File.Move(TempPath, SavePath);
+            WebGlStorage.Flush();
         }
 
         /// <summary>Loads the save, falling back to the backup. A corrupt main file is set aside, never deleted.</summary>
@@ -81,6 +82,8 @@ namespace AnvilClicker.Runtime
             {
                 if (File.Exists(path)) File.Delete(path);
             }
+
+            WebGlStorage.Flush();
         }
 
         bool TryRead(string path, out SaveEnvelope envelope, out Exception error)

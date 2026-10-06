@@ -1,3 +1,4 @@
+using System;
 using AnvilClicker.Core;
 using AnvilClicker.Data;
 using UnityEngine;
@@ -11,6 +12,8 @@ namespace AnvilClicker.Runtime
     [DefaultExecutionOrder(-1000)]
     public sealed class GameBootstrap : MonoBehaviour
     {
+        public const string SaveDirArgument = "-saveDir";
+
         [SerializeField] GameDatabase database;
 
         [Tooltip("0 = different rolls every session. Any other value makes crits reproducible.")]
@@ -34,10 +37,13 @@ namespace AnvilClicker.Runtime
             }
 
             var clock = new SystemClock();
-            SaveSystem = new SaveSystem(SaveSystem.DefaultDirectory, new SaveSerializer(), clock);
+
+            // "-saveDir <folder>" keeps test runs and screenshot captures away from the player's real save.
+            var saveDirectory = LaunchArguments.GetValue(Environment.GetCommandLineArgs(), SaveDirArgument) ?? SaveSystem.DefaultDirectory;
+            SaveSystem = new SaveSystem(saveDirectory, new SaveSerializer(), clock);
 
             var state = new GameState();
-            System.DateTime? savedAtUtc = null;
+            DateTime? savedAtUtc = null;
             if (loadSave && SaveSystem.TryLoad(out var envelope))
             {
                 state = envelope.State;

@@ -12,19 +12,25 @@ namespace AnvilClicker.Data
         [SerializeField] List<WeaponTypeDefinition> weapons = new List<WeaponTypeDefinition>();
         [SerializeField] List<UpgradeDefinition> upgrades = new List<UpgradeDefinition>();
         [SerializeField] List<ApprenticeDefinition> apprentices = new List<ApprenticeDefinition>();
+        [SerializeField] List<RoomDefinition> rooms = new List<RoomDefinition>();
+        [SerializeField] List<StationDefinition> stations = new List<StationDefinition>();
 
         Dictionary<string, WeaponTypeDefinition> _weaponsById;
         IUpgradeDefinition[] _upgrades;
         IApprenticeDefinition[] _apprentices;
+        IRoomDefinition[] _rooms;
 
         public GameBalanceConfig Balance => balance;
 
         public IReadOnlyList<WeaponTypeDefinition> Weapons => weapons;
         public IReadOnlyList<UpgradeDefinition> UpgradeAssets => upgrades;
         public IReadOnlyList<ApprenticeDefinition> ApprenticeAssets => apprentices;
+        public IReadOnlyList<RoomDefinition> RoomAssets => rooms;
+        public IReadOnlyList<StationDefinition> StationAssets => stations;
 
         IReadOnlyList<IUpgradeDefinition> IGameCatalog.Upgrades => _upgrades ??= NonNull<UpgradeDefinition, IUpgradeDefinition>(upgrades);
         IReadOnlyList<IApprenticeDefinition> IGameCatalog.Apprentices => _apprentices ??= NonNull<ApprenticeDefinition, IApprenticeDefinition>(apprentices);
+        IReadOnlyList<IRoomDefinition> IGameCatalog.Rooms => _rooms ??= NonNull<RoomDefinition, IRoomDefinition>(rooms);
 
         public bool TryGetWeapon(string id, out IWeaponDefinition weapon)
         {
@@ -65,6 +71,7 @@ namespace AnvilClicker.Data
             _weaponsById = null;
             _upgrades = null;
             _apprentices = null;
+            _rooms = null;
         }
     }
 }

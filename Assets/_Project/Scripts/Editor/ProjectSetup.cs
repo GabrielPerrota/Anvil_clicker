@@ -39,6 +39,10 @@ namespace AnvilClicker.Editor
             PlayerSettings.resizableWindow = true;
             EditorSettings.serializationMode = SerializationMode.ForceText;
 
+            // Uncompressed WebGL output can be served by any static file server; compress when publishing.
+            PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
+            PlayerSettings.WebGL.decompressionFallback = false;
+
             // Always reload the domain on Play: with it disabled, the Input System keeps stale state
             // monitors between sessions ("Binding index out of range" + NullReferenceException).
             EditorSettings.enterPlayModeOptionsEnabled = false;

@@ -75,6 +75,23 @@ namespace AnvilClicker.Tests
         public double UnlockAtLifetimeGold { get; set; }
     }
 
+    sealed class FakeRoom : IRoomDefinition
+    {
+        public FakeRoom(string id, double cost = 0, double unlockAtLifetimeGold = 0)
+        {
+            Id = id;
+            DisplayName = id;
+            Cost = cost;
+            UnlockAtLifetimeGold = unlockAtLifetimeGold;
+        }
+
+        public string Id { get; }
+        public string DisplayName { get; }
+        public string Description => string.Empty;
+        public double Cost { get; }
+        public double UnlockAtLifetimeGold { get; }
+    }
+
     sealed class FakeCatalog : IGameCatalog
     {
         readonly Dictionary<string, IWeaponDefinition> _weapons = new Dictionary<string, IWeaponDefinition>();
@@ -86,13 +103,21 @@ namespace AnvilClicker.Tests
 
         public List<IUpgradeDefinition> UpgradeList { get; } = new List<IUpgradeDefinition>();
         public List<IApprenticeDefinition> ApprenticeList { get; } = new List<IApprenticeDefinition>();
+        public List<IRoomDefinition> RoomList { get; } = new List<IRoomDefinition>();
 
         public IReadOnlyList<IUpgradeDefinition> Upgrades => UpgradeList;
         public IReadOnlyList<IApprenticeDefinition> Apprentices => ApprenticeList;
+        public IReadOnlyList<IRoomDefinition> Rooms => RoomList;
 
         public FakeCatalog With(params IUpgradeDefinition[] upgrades)
         {
             UpgradeList.AddRange(upgrades);
+            return this;
+        }
+
+        public FakeCatalog With(params IRoomDefinition[] rooms)
+        {
+            RoomList.AddRange(rooms);
             return this;
         }
 

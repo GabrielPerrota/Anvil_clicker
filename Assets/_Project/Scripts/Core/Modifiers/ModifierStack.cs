@@ -39,6 +39,9 @@ namespace AnvilClicker.Core
 
         public double CritMultiplier { get; private set; }
 
+        /// <summary>How much hotter than the start the forge is: the product of every forge speed upgrade (1 = none).</summary>
+        public double ForgeSpeedFactor { get; private set; }
+
         /// <summary>Multiplier on apprentice production (includes forge speed).</summary>
         public double PassiveMultiplier { get; private set; }
 
@@ -73,6 +76,7 @@ namespace AnvilClicker.Core
             ClickPower = Math.Max(0d, (_balance.BaseClickPower + clickFlat) * clickFactor * forgeSpeedFactor);
             CritChance = Math.Min(1d, Math.Max(0d, _balance.CritChance + critChanceFlat));
             CritMultiplier = Math.Max(1d, _balance.CritMultiplier + critMultiplierFlat);
+            ForgeSpeedFactor = Math.Max(0d, forgeSpeedFactor);
             PassiveMultiplier = Math.Max(0d, passiveFactor * forgeSpeedFactor);
             SellMultiplier = Math.Max(0d, sellFactor);
 

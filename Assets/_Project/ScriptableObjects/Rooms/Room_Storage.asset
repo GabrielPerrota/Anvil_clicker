@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95966a14a0241ef4b97137972a2f26e8, type: 3}
+  m_Name: Room_Storage
+  m_EditorClassIdentifier: AnvilClicker.Data::AnvilClicker.Data.RoomDefinition
+  id: room.storage
+  displayName: "Dep\xF3sito"
+  description: "Um galp\xE3o ao lado da oficina para guardar materiais e armas."
+  cost: 500
+  unlockAtLifetimeGold: 200
+  area:
+    x: 9
+    y: 1
+    width: 6
+    height: 6
+  stations:
+  - station: {fileID: 11400000, guid: ef6c9244f5b144542874ec39bdc23521, type: 2}
+    cell: {x: 12, y: 4}
+  doorCells:
+  - {x: 8, y: 3}
+  - {x: 8, y: 4}

@@ -70,6 +70,30 @@ namespace AnvilClicker.Tests
         }
 
         [Test]
+        public void MissingRoomList_LoadsAsEmpty()
+        {
+            var json = "{ \"saveVersion\": 1, \"savedAtUtc\": \"2026-10-04T12:30:00Z\", \"state\": { \"gold\": 5, \"upgradeLevels\": { \"a\": 1 } } }";
+
+            var state = new SaveSerializer().Deserialize(json).State;
+
+            Assert.That(state.UnlockedRooms, Is.Not.Null.And.Empty);
+            Assert.That(state.UpgradeLevels["a"], Is.EqualTo(1));
+        }
+
+        [Test]
+        public void RoomList_SurvivesRoundTrip()
+        {
+            var serializer = new SaveSerializer();
+            var original = new GameState();
+            original.UnlockedRooms.Add("workshop");
+            original.UnlockedRooms.Add("storage");
+
+            var state = serializer.Deserialize(serializer.Serialize(original, SavedAt, "x")).State;
+
+            Assert.That(state.UnlockedRooms, Is.EqualTo(new[] { "workshop", "storage" }));
+        }
+
+        [Test]
         public void MissingDictionaries_LoadAsEmpty()
         {
             var json = "{ \"saveVersion\": 1, \"savedAtUtc\": \"2026-10-04T12:30:00Z\", \"state\": { \"gold\": 5 } }";

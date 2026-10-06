@@ -297,3 +297,43 @@ Os geradores são **idempotentes**: rodar de novo atualiza em vez de duplicar.
 - `DatabaseValidationTests`: ids únicos nos SOs reais.
 
 A meta é cobrir 100% das funções puras do Core.
+
+## 13. Evolução para o design v2 (proposta, a partir do M4)
+
+O [GDD v2](GDD.md) troca o loop de "cliques que viram ouro" por **encomendas, qualidade e missões**. A arquitetura em camadas **não muda**: tudo novo nasce no `Core` (testável), com dados em ScriptableObjects e apresentação separada.
+
+### O que é reaproveitado
+`Wallet`, `ModifierStack`, `UpgradeService` (com níveis e custos fixos), `RoomService`, `GridPathfinder`, `IsoMath`, save versionado com migrações, `GameDatabaseValidator`, `GameBootstrap`/`GameContext`, `ForgeMode`, `InteractionController` e todo o mundo isométrico.
+
+### O que é novo no Core
+| Serviço | Responsabilidade | Eventos |
+|---|---|---|
+| `DayClock` | Tempo do jogo, dias, fim do dia e contas | `DayStarted`, `DayEnded` |
+| `OrderBoard` | Gera e guarda encomendas (por perfil de cliente, com `IRandom`), prazos | `OrderPosted`, `OrderAccepted`, `OrderExpired` |
+| `CraftingService` | Uma peça em produção: golpes, calor, **qualidade ★1–5** | `StrikeJudged`, `PieceFinished` |
+| `StockService` | Materiais comprados e peças prontas (inventário) | `StockChanged` |
+| `CounterService` | Entrega de peças às encomendas, pagamento, gorjeta, reputação | `OrderDelivered` |
+| `ReputationService` | Reputação por facção (Guarda, Aldeões, Reino) | `ReputationChanged` |
+| `QuestService` / `ChapterService` | Metas, prazos e recompensas das missões do reino | `QuestProgressed`, `ChapterCompleted` |
+| `ApprenticeService` | No máximo 3 aprendizes com talento e salário (substitui `WorkforceService`) | `ApprenticeHired` |
+
+Funções puras e testáveis: `QualityJudge` (golpes → estrelas), `PriceCalculator` (peça × material × qualidade), `OrderGenerator`, `DailyLedger` (contas do dia), `ForgeRhythm` (janela de acerto).
+
+### O que sai
+`WorkforceService` com marcos ×2 e PF/s, o custo exponencial `×1,15ⁿ` sem teto, a compra em lote `×10/×100/Máx` e o `OfflineProgressCalculator` baseado em PF/s (substituído por "peças em fila dos aprendizes").
+
+### Dados novos (ScriptableObjects)
+`PieceDefinition` (golpes, preço base, material), `MaterialDefinition`, `ClientDefinition` (perfil, gostos, facção), `ChapterDefinition` e `QuestDefinition` (metas, prazos, recompensas, carta), `ApprenticeDefinition` (talento, salário). `GameBalanceConfig` ganha a janela de ritmo, o tempo do dia e as contas.
+
+### Migração de save
+`GameState.CurrentSaveVersion` sobe para 2. A migração v1 → v2 converte o ouro existente para coroas com um teto (para não carregar números enormes do design antigo), preserva as salas e as melhorias compatíveis e descarta aprendizes e progresso de forja.
+
+### A avenida e os pedestres
+A fachada da Oficina é aberta e a avenida corre paralela a ela. Para dar vida à rua sem custo de lógica:
+- `StreetLife` (Runtime): gera pedestres a partir de `PedestrianDefinition` (silhueta, paleta, velocidade) em rotas de ida e volta por waypoints; densidade por hora do dia (lê o `DayClock`); **pooling**, no máximo ~12 ao mesmo tempo.
+- Pedestres **não têm colisão** e são ordenados por Y como todo o resto. Não usam o `GridPathfinder`: seguem rotas de waypoints da rua.
+- **Clientes com encomenda** são pedestres especiais: o `OrderBoard` pede um cliente ao `StreetLife`, que o tira do fluxo e o leva até o balcão (reaproveitando o `GridPathfinder` e as células do interior). O evento `ClientArrived` posta a encomenda no quadro.
+- A rua é uma sala (`RoomDefinition`) sem custo, só de piso e props, sem paredes; o ferreiro não a atravessa (colisão nas células da soleira).
+
+### Apresentação
+Quadro de encomendas (UI Toolkit) na mesa de encomendas, carta do rei na mesa do mensageiro, anel de ritmo e barra de calor no modo forja, resumo do dia. Tudo como `Presenter`s que escutam eventos, como hoje.
