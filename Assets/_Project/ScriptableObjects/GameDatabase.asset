@@ -30,3 +30,13 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1dee298fb8f2bf649b950fdbbf7af1fc, type: 2}
   - {fileID: 11400000, guid: 12d4705801fc84947abd3e577a2427b9, type: 2}
   - {fileID: 11400000, guid: 34874096f5163c24aa3476ee7165b3eb, type: 2}
+  rooms:
+  - {fileID: 11400000, guid: 3f238e8d402157c4c8339c5d2b407445, type: 2}
+  - {fileID: 11400000, guid: dd3e4a3872ccfa846bb9f86dfac401f5, type: 2}
+  stations:
+  - {fileID: 11400000, guid: a5ab4f481c79b70459153f2e15f66a63, type: 2}
+  - {fileID: 11400000, guid: 813d45720b8a2aa43be0fe663c144974, type: 2}
+  - {fileID: 11400000, guid: a7f25fe66dd5def4ab53534aadc7549e, type: 2}
+  - {fileID: 11400000, guid: e5f5b50a57e63c342a90b9f87a66ef56, type: 2}
+  - {fileID: 11400000, guid: 64f3667e3c3ada54eae34959ed84e2c1, type: 2}
+  - {fileID: 11400000, guid: ef6c9244f5b144542874ec39bdc23521, type: 2}

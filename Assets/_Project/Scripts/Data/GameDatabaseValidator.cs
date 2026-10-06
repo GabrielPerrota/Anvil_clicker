@@ -82,6 +82,11 @@ namespace AnvilClicker.Data
                 if (room.Area.width < 1 || room.Area.height < 1) errors.Add($"{label}: area is empty.");
                 if (room.Cost <= 0) hasFreeRoom = true;
 
+                foreach (var door in room.DoorCells)
+                {
+                    if (room.Area.Contains(door)) errors.Add($"{label}: door cell {door} is inside the room; doors sit just outside the area.");
+                }
+
                 var used = new HashSet<Vector2Int>();
                 foreach (var placement in room.Stations)
                 {

@@ -29,6 +29,9 @@ namespace AnvilClicker.Data
         [SerializeField] RectInt area = new RectInt(0, 0, 6, 6);
         [SerializeField] StationPlacement[] stations = Array.Empty<StationPlacement>();
 
+        [Tooltip("Cells just outside the area that become an opening to the rest of the workshop once the room is built. Boarded up until then.")]
+        [SerializeField] Vector2Int[] doorCells = Array.Empty<Vector2Int>();
+
         public string Id => id;
         public string DisplayName => displayName;
         public string Description => description;
@@ -36,6 +39,7 @@ namespace AnvilClicker.Data
         public double UnlockAtLifetimeGold => unlockAtLifetimeGold;
         public RectInt Area => area;
         public StationPlacement[] Stations => stations;
+        public Vector2Int[] DoorCells => doorCells;
 
         void OnValidate()
         {
