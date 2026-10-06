@@ -130,6 +130,7 @@ namespace AnvilClicker.Core
             envelope.State.SaveVersion = _currentVersion;
             envelope.State.UpgradeLevels ??= new Dictionary<string, int>();
             envelope.State.Apprentices ??= new Dictionary<string, int>();
+            envelope.State.UnlockedRooms ??= new List<string>();
             envelope.SavedAtUtc = DateTime.SpecifyKind(envelope.SavedAtUtc, DateTimeKind.Utc);
             return envelope;
         }
