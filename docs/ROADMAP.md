@@ -61,7 +61,7 @@ No M1 a venda é automática e só existe uma arma, porque balcão e catálogo v
 **Meta:** andar pela ferraria e interagir com as estações.
 - [ ] `feat(world)`: Grid isométrico, tilemaps Floor e Walls, sorting por eixo Y
 - [ ] `feat(world)`: player com WASD relativo à tela + animação em 4 direções (placeholder)
-- [ ] `feat(world)`: `Interactable` + estações (Bigorna, Forja, Balcão, Mensageiro) com prompt "E"
+- [ ] `feat(world)`: `Interactable` + estações (Bigorna, Forja, Mesa de Melhorias, Balcão, Mensageiro) com prompt "E"; a loja abre na Mesa de Melhorias
 - [ ] `feat(world)`: modo forja na bigorna (zoom de câmera, golpes)
 - [ ] `feat(core)`: `IsoGridPathfinder` (A*) + click na estação → caminhar e interagir
 - [ ] `feat(camera)`: follow, limites, zoom
@@ -69,6 +69,8 @@ No M1 a venda é automática e só existe uma arma, porque balcão e catálogo v
 - [ ] `feat(fx)`: Light2D da forja (pulsante, mais forte com o upgrade de calor)
 - [ ] `feat(editor)`: `Build Workshop Scene` completo e idempotente
 - [ ] `test`: pathfinder, regras de desbloqueio de sala
+- [ ] `chore`: primeiro build WebGL (validar o save no IndexedDB), vindo do M2
+- [ ] `feat(runtime)`: argumento `-saveDir` para rodar o jogo sem tocar no save real
 
 **Pronto quando:** você anda, abre cada painel na estação certa e compra uma sala que surge no mapa.
 
