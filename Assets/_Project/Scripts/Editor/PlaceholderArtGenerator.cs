@@ -34,6 +34,7 @@ namespace AnvilClicker.Editor
             WriteSprite(AnvilClickerPaths.WhiteSprite, Fill(4, 4, new Color32(255, 255, 255, 255)), AnvilPixelsPerUnit, new Vector2(0.5f, 0.5f));
 
             CreateFloorTile();
+            WorldArtGenerator.Generate();
             AssetDatabase.SaveAssets();
             Debug.Log("[Anvil Clicker] Placeholder sprites generated.");
         }
@@ -120,7 +121,7 @@ namespace AnvilClicker.Editor
         }
 
         /// <summary>Deterministic per-pixel brightness noise so flat areas don't look plastic.</summary>
-        static Color32 Dither(Color32 color, int x, int y, int amplitude)
+        internal static Color32 Dither(Color32 color, int x, int y, int amplitude)
         {
             unchecked
             {
@@ -131,9 +132,9 @@ namespace AnvilClicker.Editor
             }
         }
 
-        static byte Shift(byte channel, int offset) => (byte)Mathf.Clamp(channel + offset, 0, 255);
+        internal static byte Shift(byte channel, int offset) => (byte)Mathf.Clamp(channel + offset, 0, 255);
 
-        static Texture2D ToTexture(int width, int height, Color32[] pixels)
+        internal static Texture2D ToTexture(int width, int height, Color32[] pixels)
         {
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
             texture.SetPixels32(pixels);
@@ -143,7 +144,7 @@ namespace AnvilClicker.Editor
 
         // --- Import ------------------------------------------------------------------------------
 
-        static void WriteSprite(string path, Texture2D texture, int pixelsPerUnit, Vector2 pivot)
+        internal static void WriteSprite(string path, Texture2D texture, int pixelsPerUnit, Vector2 pivot)
         {
             var bytes = texture.EncodeToPNG();
             UnityEngine.Object.DestroyImmediate(texture);

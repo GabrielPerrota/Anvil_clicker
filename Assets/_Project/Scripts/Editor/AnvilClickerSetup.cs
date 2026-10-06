@@ -20,6 +20,7 @@ namespace AnvilClicker.Editor
             ProjectSetup.CreateFolders();
             ProjectSetup.ConfigureProject();
             PlaceholderArtGenerator.Generate();
+            StationPrefabFactory.Generate();
             SampleDataGenerator.Generate();
             GameTools.ValidateDatabase();
             WorkshopSceneBuilder.BuildIfMissing();

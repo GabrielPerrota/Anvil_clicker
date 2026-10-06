@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using AnvilClicker.Core;
 using AnvilClicker.Data;
 using AnvilClicker.Runtime;
@@ -65,6 +66,8 @@ namespace AnvilClicker.Editor
         [MenuItem(DebugMenu + "Add 1K Gold", true)]
         [MenuItem(DebugMenu + "Add 1M Gold", true)]
         [MenuItem(DebugMenu + "Simulate 1h Offline", true)]
+        [MenuItem(DebugMenu + "Unlock All Rooms", true)]
+        [MenuItem(DebugMenu + "Teleport To Anvil", true)]
         [MenuItem(DebugMenu + "Save Now", true)]
         static bool IsPlaying() => EditorApplication.isPlaying;
 
@@ -76,6 +79,27 @@ namespace AnvilClicker.Editor
 
         [MenuItem(DebugMenu + "Simulate 1h Offline", priority = 102)]
         public static void SimulateOfflineHour() => WithContext(context => context.ApplyOfflineProgress(TimeSpan.FromHours(1)));
+
+        [MenuItem(DebugMenu + "Unlock All Rooms", priority = 104)]
+        public static void UnlockAllRooms() => WithContext(context =>
+        {
+            foreach (var room in context.Catalog.Rooms)
+            {
+                if (context.Rooms.IsUnlocked(room)) continue;
+                // Pay the price and satisfy the lifetime-gold requirement, so the normal purchase path runs.
+                context.Wallet.Add(System.Math.Max(room.Cost, room.UnlockAtLifetimeGold));
+                context.Rooms.TryBuy(room);
+            }
+        });
+
+        [MenuItem(DebugMenu + "Teleport To Anvil", priority = 105)]
+        public static void TeleportToAnvil()
+        {
+            var player = Object.FindFirstObjectByType<PlayerController>();
+            var anvil = Object.FindObjectsByType<Station>(FindObjectsSortMode.None).FirstOrDefault(s => s.Kind == AnvilClicker.Data.StationKind.Anvil);
+            if (player == null || anvil == null) Debug.LogWarning("[Anvil Clicker] Player or anvil not found.");
+            else player.TeleportTo(anvil.Position + new Vector3(-0.9f, -0.2f, 0f));
+        }
 
         [MenuItem(DebugMenu + "Save Now", priority = 103)]
         public static void SaveNow()

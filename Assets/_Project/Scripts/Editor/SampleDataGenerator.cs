@@ -107,6 +107,9 @@ namespace AnvilClicker.Editor
             var apprentices = new List<ApprenticeDefinition>();
             foreach (var seed in Apprentices) apprentices.Add(CreateApprentice(seed));
 
+            var stations = WorldDataSeeds.CreateStations();
+            var rooms = WorldDataSeeds.CreateRooms(stations);
+
             var database = EditorAssetUtility.LoadOrCreate<GameDatabase>(AnvilClickerPaths.GameDatabase);
             EditorAssetUtility.Edit(database, so =>
             {
@@ -116,6 +119,8 @@ namespace AnvilClicker.Editor
                 AddIfMissing(so.Require("weapons"), dagger);
                 foreach (var upgrade in upgrades) AddIfMissing(so.Require("upgrades"), upgrade);
                 foreach (var apprentice in apprentices) AddIfMissing(so.Require("apprentices"), apprentice);
+                foreach (var station in stations.Values) AddIfMissing(so.Require("stations"), station);
+                foreach (var room in rooms) AddIfMissing(so.Require("rooms"), room);
             });
 
             AssetDatabase.SaveAssets();
@@ -167,7 +172,7 @@ namespace AnvilClicker.Editor
             return apprentice;
         }
 
-        static void AddIfMissing(SerializedProperty list, Object item)
+        internal static void AddIfMissing(SerializedProperty list, Object item)
         {
             for (var i = 0; i < list.arraySize; i++)
             {

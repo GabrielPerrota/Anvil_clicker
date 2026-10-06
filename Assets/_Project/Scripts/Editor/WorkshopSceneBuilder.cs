@@ -13,21 +13,14 @@ namespace AnvilClicker.Editor
 {
     /// <summary>
     /// Builds Scenes/Workshop.unity from scratch. The scene is fully generated: change this builder,
-    /// not the scene file. Requires placeholder art and sample data (see <see cref="AnvilClickerSetup"/>).
+    /// not the scene file. The rooms themselves (floor, walls, stations) are built at runtime from the
+    /// RoomDefinition assets, so the scene only holds the empty map, the player and the systems.
+    /// Requires placeholder art, prefabs and sample data (see <see cref="AnvilClickerSetup"/>).
     /// </summary>
     internal static class WorkshopSceneBuilder
     {
-        const int FloorRadius = 4;
-
-        /// <summary>
-        /// Half the HUD's right padding (464 px of a 1080 px-tall reference) in world units:
-        /// 232 px × (2 × orthographic size 3.4 / 1080 px).
-        /// </summary>
-        const float CameraOffsetX = 1.46f;
-
         static readonly Color BackgroundColor = new Color(0.07f, 0.055f, 0.06f);
         static readonly Color AmbientColor = new Color(0.72f, 0.68f, 0.82f);
-        static readonly Color ForgeLightColor = new Color(1f, 0.55f, 0.22f);
 
         /// <summary>
         /// Unity assigns fresh object ids on every rebuild, so automated runs only create the scene when
@@ -58,49 +51,59 @@ namespace AnvilClicker.Editor
 
             // Load assets only after NewScene: opening a scene in Single mode unloads unused assets, which
             // turns references loaded earlier into destroyed objects that get saved as missing (null).
-            var database = EditorAssetUtility.LoadRequired<GameDatabase>(AnvilClickerPaths.GameDatabase);
-            var anvilSprite = EditorAssetUtility.LoadRequired<Sprite>(AnvilClickerPaths.AnvilSprite);
-            var floorTile = EditorAssetUtility.LoadRequired<Tile>(AnvilClickerPaths.FloorTile);
-            var sparksMaterial = CreateSparksMaterial();
-            var panelSettings = CreatePanelSettings();
-            var hud = EditorAssetUtility.LoadRequired<VisualTreeAsset>(AnvilClickerPaths.HudUxml);
-            var shopRow = EditorAssetUtility.LoadRequired<VisualTreeAsset>(AnvilClickerPaths.ShopRowUxml);
+            var assets = SceneAssets.Load();
 
-            var camera = CreateCamera();
             CreateGlobalLight();
-            var floor = CreateFloor(floorTile);
-            var anvil = CreateAnvil(anvilSprite, sparksMaterial);
-            var ui = CreateUi(panelSettings, hud, shopRow, camera);
-            var bootstrap = CreateSystems(database, camera, anvil, ui);
+            var world = CreateWorld(assets, out var stationsRoot);
+            var player = CreatePlayer(assets, world);
+            var cameraRig = CreateCameraRig(player.transform, world, out var camera);
+            var ui = CreateUi(assets, camera);
+            var systems = CreateSystems(assets, camera, player, world, ui, cameraRig);
+            CreateRoomBuilder(assets, world, stationsRoot);
+            CreateWorkers(assets);
 
-            Validate(bootstrap, floor);
+            Validate(systems, world);
             EditorSceneManager.SaveScene(scene, AnvilClickerPaths.WorkshopScene);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(AnvilClickerPaths.WorkshopScene, true) };
             AssetDatabase.SaveAssets();
             Debug.Log($"[Anvil Clicker] Scene built at {AnvilClickerPaths.WorkshopScene}.");
         }
 
-        // --- World ---------------------------------------------------------------------------------
-
-        static Camera CreateCamera()
+        sealed class SceneAssets
         {
-            var go = new GameObject("Main Camera") { tag = "MainCamera" };
-            // Shifted right so the anvil sits in the middle of the area left of the shop panel.
-            go.transform.position = new Vector3(CameraOffsetX, 0.9f, -10f);
+            public GameDatabase Database;
+            public Tile FloorTile, WallTile, InvisibleWallTile;
+            public GameObject Barrier;
+            public ParticleSystem Dust;
+            public Sprite[] PlayerSprites;
+            public Sprite WorkerSprite;
+            public PanelSettings PanelSettings;
+            public VisualTreeAsset Hud, ShopRow;
 
-            var camera = go.AddComponent<Camera>();
-            camera.orthographic = true;
-            camera.orthographicSize = 3.4f;
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = BackgroundColor;
-            camera.nearClipPlane = 0.3f;
-            camera.farClipPlane = 100f;
-
-            go.AddComponent<UniversalAdditionalCameraData>();
-            go.AddComponent<AudioListener>();
-            go.AddComponent<CameraShake>();
-            return camera;
+            public static SceneAssets Load() => new SceneAssets
+            {
+                Database = EditorAssetUtility.LoadRequired<GameDatabase>(AnvilClickerPaths.GameDatabase),
+                FloorTile = EditorAssetUtility.LoadRequired<Tile>(AnvilClickerPaths.FloorTile),
+                WallTile = EditorAssetUtility.LoadRequired<Tile>(AnvilClickerPaths.WallTile),
+                InvisibleWallTile = EditorAssetUtility.LoadRequired<Tile>(AnvilClickerPaths.InvisibleWallTile),
+                Barrier = EditorAssetUtility.LoadRequired<GameObject>(AnvilClickerPaths.FxPrefabs + "/Barrier.prefab"),
+                Dust = EditorAssetUtility.LoadRequired<GameObject>(AnvilClickerPaths.FxPrefabs + "/BuildDust.prefab").GetComponent<ParticleSystem>(),
+                // Order must match FacingDirection: DownRight, DownLeft, UpLeft, UpRight.
+                PlayerSprites = new[]
+                {
+                    EditorAssetUtility.LoadRequired<Sprite>(AnvilClickerPaths.PlayerDownRight),
+                    EditorAssetUtility.LoadRequired<Sprite>(AnvilClickerPaths.PlayerDownLeft),
+                    EditorAssetUtility.LoadRequired<Sprite>(AnvilClickerPaths.PlayerUpLeft),
+                    EditorAssetUtility.LoadRequired<Sprite>(AnvilClickerPaths.PlayerUpRight)
+                },
+                WorkerSprite = EditorAssetUtility.LoadRequired<Sprite>(AnvilClickerPaths.WorkerSprite),
+                PanelSettings = CreatePanelSettings(),
+                Hud = EditorAssetUtility.LoadRequired<VisualTreeAsset>(AnvilClickerPaths.HudUxml),
+                ShopRow = EditorAssetUtility.LoadRequired<VisualTreeAsset>(AnvilClickerPaths.ShopRowUxml)
+            };
         }
+
+        // --- World ---------------------------------------------------------------------------------
 
         static void CreateGlobalLight()
         {
@@ -108,125 +111,163 @@ namespace AnvilClicker.Editor
             var light = go.AddComponent<Light2D>();
             light.lightType = Light2D.LightType.Global;
             light.color = AmbientColor;
-            light.intensity = 0.45f;
+            light.intensity = 0.5f;
         }
 
-        static Tilemap CreateFloor(Tile floorTile)
+        static WorldGrid CreateWorld(SceneAssets assets, out Transform stationsRoot)
         {
-            var grid = new GameObject("Grid").AddComponent<Grid>();
+            var gridGo = new GameObject("Grid");
+            var grid = gridGo.AddComponent<Grid>();
             grid.cellLayout = GridLayout.CellLayout.Isometric;
             grid.cellSize = new Vector3(1f, 0.5f, 1f);
 
-            var floorGo = new GameObject("Floor");
-            floorGo.transform.SetParent(grid.transform, false);
-            var tilemap = floorGo.AddComponent<Tilemap>();
-            var renderer = floorGo.AddComponent<TilemapRenderer>();
-            renderer.sortingLayerName = "Floor";
-            renderer.mode = TilemapRenderer.Mode.Chunk;
+            var floor = CreateTilemap(gridGo.transform, "Floor", "Floor", TilemapRenderer.Mode.Chunk);
+            var walls = CreateTilemap(gridGo.transform, "Walls", "World", TilemapRenderer.Mode.Individual);
 
-            for (var x = -FloorRadius; x <= FloorRadius; x++)
-            for (var y = -FloorRadius; y <= FloorRadius; y++)
-                tilemap.SetTile(new Vector3Int(x, y, 0), floorTile);
+            // The blacksmith collides with every wall tile as one merged shape.
+            var wallBody = walls.gameObject.AddComponent<Rigidbody2D>();
+            wallBody.bodyType = RigidbodyType2D.Static;
+            var composite = walls.gameObject.AddComponent<CompositeCollider2D>();
+            var tileCollider = walls.gameObject.AddComponent<TilemapCollider2D>();
+            tileCollider.compositeOperation = Collider2D.CompositeOperation.Merge;
 
+            composite.geometryType = CompositeCollider2D.GeometryType.Polygons;
+
+            var world = gridGo.AddComponent<WorldGrid>();
+            EditorAssetUtility.Edit(world, so =>
+            {
+                so.Require("grid").objectReferenceValue = grid;
+                so.Require("floor").objectReferenceValue = floor;
+                so.Require("walls").objectReferenceValue = walls;
+            });
+
+            stationsRoot = new GameObject("Stations").transform;
+            return world;
+        }
+
+        static Tilemap CreateTilemap(Transform parent, string name, string sortingLayer, TilemapRenderer.Mode mode)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+
+            var tilemap = go.AddComponent<Tilemap>();
+            var renderer = go.AddComponent<TilemapRenderer>();
+            renderer.sortingLayerName = sortingLayer;
+            renderer.mode = mode;
             return tilemap;
         }
 
-        sealed class AnvilRig
+        static GameObject CreatePlayer(SceneAssets assets, WorldGrid world)
         {
-            public GameObject Root;
-            public Collider2D Collider;
-            public Transform StrikePoint;
-            public ParticleSystem Sparks;
-            public AnvilSquash Squash;
-            public Light2D ForgeLight;
-        }
+            var go = new GameObject("Player");
+            var start = world.Grid.GetCellCenterWorld(new Vector3Int(WorldDataSeeds.PlayerStartCell.x, WorldDataSeeds.PlayerStartCell.y, 0));
+            go.transform.position = start;
 
-        static AnvilRig CreateAnvil(Sprite sprite, Material sparksMaterial)
-        {
-            var root = new GameObject("Anvil");
-            var spriteRenderer = root.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = sprite;
+            var body = go.AddComponent<Rigidbody2D>();
+            body.gravityScale = 0f;
+
+            var collider = go.AddComponent<CircleCollider2D>();
+            collider.radius = 0.12f;
+            collider.offset = new Vector2(0f, 0.04f);
+
+            var spriteGo = new GameObject("Sprite");
+            spriteGo.transform.SetParent(go.transform, false);
+            var spriteRenderer = spriteGo.AddComponent<SpriteRenderer>();
+            spriteRenderer.sprite = assets.PlayerSprites[0];
             spriteRenderer.sortingLayerName = "World";
 
-            var collider = root.AddComponent<BoxCollider2D>(); // auto-sized to the sprite
-            var squash = root.AddComponent<AnvilSquash>();
-
-            var strikePoint = new GameObject("StrikePoint").transform;
-            strikePoint.SetParent(root.transform, false);
-            strikePoint.localPosition = new Vector3(0.25f, 1.12f, 0f);
-
-            var sparks = CreateSparks(strikePoint, sparksMaterial);
-
-            var lightGo = new GameObject("Forge Glow");
-            lightGo.transform.SetParent(root.transform, false);
-            lightGo.transform.localPosition = new Vector3(0f, 0.9f, 0f);
-            var forgeLight = lightGo.AddComponent<Light2D>();
-            forgeLight.lightType = Light2D.LightType.Point;
-            forgeLight.color = ForgeLightColor;
-            forgeLight.intensity = 0.9f;
-            forgeLight.pointLightInnerRadius = 0.4f;
-            forgeLight.pointLightOuterRadius = 3.8f;
-
-            return new AnvilRig
+            var controller = go.AddComponent<PlayerController>();
+            EditorAssetUtility.Edit(controller, so =>
             {
-                Root = root,
-                Collider = collider,
-                StrikePoint = strikePoint,
-                Sparks = sparks,
-                Squash = squash,
-                ForgeLight = forgeLight
-            };
+                so.Require("body").objectReferenceValue = spriteRenderer;
+                var sprites = so.Require("facingSprites");
+                sprites.arraySize = assets.PlayerSprites.Length;
+                for (var i = 0; i < assets.PlayerSprites.Length; i++) sprites.GetArrayElementAtIndex(i).objectReferenceValue = assets.PlayerSprites[i];
+            });
+
+            var follower = go.AddComponent<PathFollower>();
+            EditorAssetUtility.Edit(follower, so =>
+            {
+                so.Require("player").objectReferenceValue = controller;
+                so.Require("world").objectReferenceValue = world;
+            });
+
+            return go;
         }
 
-        static ParticleSystem CreateSparks(Transform parent, Material material)
+        static CameraFollow CreateCameraRig(Transform target, WorldGrid world, out Camera camera)
         {
-            var go = new GameObject("Sparks");
-            go.transform.SetParent(parent, false);
+            var rig = new GameObject("Camera Rig");
+            rig.transform.position = target.position;
 
-            var sparks = go.AddComponent<ParticleSystem>();
-            sparks.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var cameraGo = new GameObject("Main Camera") { tag = "MainCamera" };
+            cameraGo.transform.SetParent(rig.transform, false);
+            cameraGo.transform.localPosition = new Vector3(0f, 0f, -10f);
 
-            var main = sparks.main;
-            main.playOnAwake = false;
-            main.loop = false;
-            main.duration = 1f;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(0.2f, 0.5f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(2.5f, 7f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.12f);
-            main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.9f, 0.45f), new Color(1f, 0.45f, 0.1f));
-            main.gravityModifier = 1.6f;
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = 400;
+            camera = cameraGo.AddComponent<Camera>();
+            camera.orthographic = true;
+            camera.orthographicSize = 3.6f;
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = BackgroundColor;
+            camera.nearClipPlane = 0.3f;
+            camera.farClipPlane = 100f;
 
-            var emission = sparks.emission;
-            emission.rateOverTime = 0f;
+            cameraGo.AddComponent<UniversalAdditionalCameraData>();
+            cameraGo.AddComponent<AudioListener>();
+            cameraGo.AddComponent<CameraShake>();
 
-            var shape = sparks.shape;
-            shape.shapeType = ParticleSystemShapeType.Cone;
-            shape.angle = 55f;
-            shape.radius = 0.05f;
-            shape.rotation = new Vector3(-90f, 0f, 0f); // cone points up (+Y) instead of +Z
+            var follow = rig.AddComponent<CameraFollow>();
+            var cameraRef = camera;
+            EditorAssetUtility.Edit(follow, so =>
+            {
+                so.Require("cam").objectReferenceValue = cameraRef;
+                so.Require("target").objectReferenceValue = target;
+                so.Require("world").objectReferenceValue = world;
+            });
+            return follow;
+        }
 
-            var fade = new Gradient();
-            fade.SetKeys(
-                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
-                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 0.6f), new GradientAlphaKey(0f, 1f) });
-            var colorOverLifetime = sparks.colorOverLifetime;
-            colorOverLifetime.enabled = true;
-            colorOverLifetime.color = fade;
+        static void CreateRoomBuilder(SceneAssets assets, WorldGrid world, Transform stationsRoot)
+        {
+            var go = new GameObject("Room Builder");
+            var builder = go.AddComponent<RoomBuilder>();
+            EditorAssetUtility.Edit(builder, so =>
+            {
+                so.Require("database").objectReferenceValue = assets.Database;
+                so.Require("world").objectReferenceValue = world;
+                so.Require("stationsRoot").objectReferenceValue = stationsRoot;
+                so.Require("floorTile").objectReferenceValue = assets.FloorTile;
+                so.Require("wallTile").objectReferenceValue = assets.WallTile;
+                so.Require("invisibleWallTile").objectReferenceValue = assets.InvisibleWallTile;
+                so.Require("barrierPrefab").objectReferenceValue = assets.Barrier;
+                so.Require("dustPrefab").objectReferenceValue = assets.Dust;
+            });
+        }
 
-            var sizeOverLifetime = sparks.sizeOverLifetime;
-            sizeOverLifetime.enabled = true;
-            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 1f, 1f, 0.2f));
+        static void CreateWorkers(SceneAssets assets)
+        {
+            var root = new GameObject("Apprentice Workers");
+            var spots = new Transform[WorldDataSeeds.WorkerCells.Length];
 
-            var renderer = go.GetComponent<ParticleSystemRenderer>();
-            renderer.sharedMaterial = material;
-            renderer.sortingLayerName = "FX";
-            renderer.renderMode = ParticleSystemRenderMode.Stretch;
-            renderer.velocityScale = 0.04f;
-            renderer.lengthScale = 1.5f;
+            // Spots are placed from grid coordinates, so they follow the isometric layout.
+            var grid = Object.FindFirstObjectByType<Grid>();
+            for (var i = 0; i < spots.Length; i++)
+            {
+                var cell = WorldDataSeeds.WorkerCells[i];
+                var spot = new GameObject($"Spot {i + 1}").transform;
+                spot.SetParent(root.transform, false);
+                spot.position = grid.GetCellCenterWorld(new Vector3Int(cell.x, cell.y, 0));
+                spots[i] = spot;
+            }
 
-            return sparks;
+            var workers = root.AddComponent<ApprenticeWorkers>();
+            EditorAssetUtility.Edit(workers, so =>
+            {
+                so.Require("workerSprite").objectReferenceValue = assets.WorkerSprite;
+                var list = so.Require("spots");
+                list.arraySize = spots.Length;
+                for (var i = 0; i < spots.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = spots[i];
+            });
         }
 
         // --- UI ------------------------------------------------------------------------------------
@@ -235,41 +276,63 @@ namespace AnvilClicker.Editor
         {
             public UIDocument Document;
             public FloatingTextLayer FloatingText;
+            public StationPanelsPresenter Panels;
         }
 
-        static UiRig CreateUi(PanelSettings panelSettings, VisualTreeAsset hud, VisualTreeAsset shopRow, Camera camera)
+        static UiRig CreateUi(SceneAssets assets, Camera camera)
         {
             var go = new GameObject("HUD");
             var document = go.AddComponent<UIDocument>();
-            document.panelSettings = panelSettings;
-            document.visualTreeAsset = hud;
+            document.panelSettings = assets.PanelSettings;
+            document.visualTreeAsset = assets.Hud;
 
             go.AddComponent<HudPresenter>();
+            go.AddComponent<OfflineSummaryPresenter>();
+
             var floatingText = go.AddComponent<FloatingTextLayer>();
             EditorAssetUtility.Edit(floatingText, so => so.Require("worldCamera").objectReferenceValue = camera);
 
             var shop = go.AddComponent<ShopPresenter>();
-            EditorAssetUtility.Edit(shop, so => so.Require("rowTemplate").objectReferenceValue = shopRow);
+            EditorAssetUtility.Edit(shop, so => so.Require("rowTemplate").objectReferenceValue = assets.ShopRow);
 
-            go.AddComponent<OfflineSummaryPresenter>();
-
-            return new UiRig { Document = document, FloatingText = floatingText };
+            var panels = go.AddComponent<StationPanelsPresenter>();
+            return new UiRig { Document = document, FloatingText = floatingText, Panels = panels };
         }
 
         // --- Systems -------------------------------------------------------------------------------
 
-        static GameBootstrap CreateSystems(GameDatabase database, Camera camera, AnvilRig anvil, UiRig ui)
+        sealed class SystemsRig
+        {
+            public GameBootstrap Bootstrap;
+        }
+
+        static SystemsRig CreateSystems(SceneAssets assets, Camera camera, GameObject player, WorldGrid world, UiRig ui, CameraFollow cameraRig)
         {
             var go = new GameObject("Systems");
 
             var bootstrap = go.AddComponent<GameBootstrap>();
-            EditorAssetUtility.Edit(bootstrap, so => so.Require("database").objectReferenceValue = database);
+            EditorAssetUtility.Edit(bootstrap, so => so.Require("database").objectReferenceValue = assets.Database);
             go.AddComponent<GameLoop>();
+
+            var forgeMode = go.AddComponent<ForgeMode>();
+            var playerController = player.GetComponent<PlayerController>();
+            EditorAssetUtility.Edit(forgeMode, so => so.Require("player").objectReferenceValue = playerController);
+
+            var interaction = go.AddComponent<InteractionController>();
+            EditorAssetUtility.Edit(interaction, so =>
+            {
+                so.Require("player").objectReferenceValue = playerController;
+                so.Require("pathFollower").objectReferenceValue = player.GetComponent<PathFollower>();
+                so.Require("world").objectReferenceValue = world;
+                so.Require("forgeMode").objectReferenceValue = forgeMode;
+                so.Require("worldCamera").objectReferenceValue = camera;
+                so.Require("uiDocument").objectReferenceValue = ui.Document;
+            });
 
             var input = go.AddComponent<ForgeInput>();
             EditorAssetUtility.Edit(input, so =>
             {
-                so.Require("anvilCollider").objectReferenceValue = anvil.Collider;
+                so.Require("forgeMode").objectReferenceValue = forgeMode;
                 so.Require("worldCamera").objectReferenceValue = camera;
                 so.Require("uiDocument").objectReferenceValue = ui.Document;
             });
@@ -279,49 +342,39 @@ namespace AnvilClicker.Editor
             var feedback = go.AddComponent<StrikeFeedback>();
             EditorAssetUtility.Edit(feedback, so =>
             {
-                so.Require("strikePoint").objectReferenceValue = anvil.StrikePoint;
-                so.Require("sparks").objectReferenceValue = anvil.Sparks;
-                so.Require("squash").objectReferenceValue = anvil.Squash;
+                so.Require("forgeMode").objectReferenceValue = forgeMode;
                 so.Require("cameraShake").objectReferenceValue = camera.GetComponent<CameraShake>();
                 so.Require("floatingText").objectReferenceValue = ui.FloatingText;
                 so.Require("sfx").objectReferenceValue = sfx;
-                so.Require("forgeLight").objectReferenceValue = anvil.ForgeLight;
             });
 
-            return bootstrap;
+            EditorAssetUtility.Edit(ui.Panels, so =>
+            {
+                so.Require("interaction").objectReferenceValue = interaction;
+                so.Require("forgeMode").objectReferenceValue = forgeMode;
+            });
+
+            EditorAssetUtility.Edit(cameraRig, so => so.Require("forgeMode").objectReferenceValue = forgeMode);
+
+            return new SystemsRig { Bootstrap = bootstrap };
         }
 
         /// <summary>Fails the build instead of saving a scene whose asset references were lost.</summary>
-        static void Validate(GameBootstrap bootstrap, Tilemap floor)
+        static void Validate(SystemsRig systems, WorldGrid world)
         {
-            var database = new SerializedObject(bootstrap).Require("database").objectReferenceValue as GameDatabase;
+            var database = new SerializedObject(systems.Bootstrap).Require("database").objectReferenceValue as GameDatabase;
             if (database == null || database.Balance == null)
                 throw new System.InvalidOperationException("Workshop scene: GameBootstrap lost its GameDatabase reference.");
 
-            if (floor.GetUsedTilesCount() == 0)
-                throw new System.InvalidOperationException("Workshop scene: the floor tilemap has no tiles.");
-        }
+            if (database.RoomAssets.Count == 0)
+                throw new System.InvalidOperationException("Workshop scene: the database has no rooms to build.");
 
-        // --- Assets --------------------------------------------------------------------------------
-
-        static Material CreateSparksMaterial()
-        {
-            var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default")
-                         ?? Shader.Find("Sprites/Default");
-            if (shader == null) throw new System.InvalidOperationException("No sprite shader found for the sparks material.");
-
-            EditorAssetUtility.EnsureFolder(AnvilClickerPaths.Materials);
-            var material = AssetDatabase.LoadAssetAtPath<Material>(AnvilClickerPaths.SparksMaterial);
-            if (material == null)
+            var gridRef = new SerializedObject(world);
+            foreach (var field in new[] { "grid", "floor", "walls" })
             {
-                material = new Material(shader);
-                AssetDatabase.CreateAsset(material, AnvilClickerPaths.SparksMaterial);
+                if (gridRef.Require(field).objectReferenceValue == null)
+                    throw new System.InvalidOperationException($"Workshop scene: WorldGrid lost its '{field}' reference.");
             }
-
-            material.shader = shader;
-            material.mainTexture = EditorAssetUtility.LoadRequired<Texture2D>(AnvilClickerPaths.SparkSprite);
-            EditorUtility.SetDirty(material);
-            return material;
         }
 
         static PanelSettings CreatePanelSettings()
