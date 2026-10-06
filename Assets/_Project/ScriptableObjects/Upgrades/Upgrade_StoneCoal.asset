@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a389af9661803134f8345dbcb838f4ca, type: 3}
+  m_Name: Upgrade_StoneCoal
+  m_EditorClassIdentifier: AnvilClicker.Data::AnvilClicker.Data.UpgradeDefinition
+  id: upgrade.stone_coal
+  displayName: "Carv\xE3o de Pedra"
+  description: 'A forja fica mais quente: +50% de PF.'
+  category: 1
+  baseCost: 2500
+  costGrowth: 1
+  maxLevel: 1
+  unlockAtLifetimeGold: 1000
+  effects:
+  - type: 2
+    valuePerLevel: 0.5

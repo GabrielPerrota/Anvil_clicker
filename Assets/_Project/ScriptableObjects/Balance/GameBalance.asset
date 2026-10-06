@@ -16,3 +16,7 @@ MonoBehaviour:
   critChance: 0.05
   critMultiplier: 5
   startingWeapon: {fileID: 11400000, guid: f55e2f88f032c0c44b1632ae84089052, type: 2}
+  apprenticeMilestones: 190000003200000064000000c8000000
+  offlineCapHours: 8
+  offlineEfficiency: 0.5
+  autosaveIntervalSeconds: 30

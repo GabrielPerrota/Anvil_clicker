@@ -25,35 +25,35 @@
 - [x] Decisões: visual, plataforma, monetização, MVP
 - [x] Aprovar GDD, ARCHITECTURE e ROADMAP
 
-## M1 — Fundação e o primeiro golpe
+## M1 — Fundação e o primeiro golpe ✅ (`v0.0.1`, `v0.0.2`)
 **Meta:** abrir o projeto, clicar na bigorna e ver o ouro subir.
-- [ ] `chore`: `.gitignore` Unity, `.gitattributes` (LFS + text), Force Text, README, CHANGELOG, CLAUDE.md
-- [ ] `chore`: projeto Unity 6 LTS + URP 2D Renderer + Input System + Test Framework
-- [ ] `feat(editor)`: `Setup/Create Folders`, `Setup/Configure Project`, asmdefs
-- [ ] `feat(core)`: `GameState`, `Wallet`, `ForgeService` (golpe, crítico, conclusão), `IClock`/`IRandom`
-- [ ] `feat(core)`: `NumberFormatter` (K, M, B...)
-- [ ] `feat(data)`: SOs mínimos (arma, balanceamento, database) para não ter números mágicos no código
-- [ ] `feat(runtime)`: `GameBootstrap` (composition root) + input da bigorna. O `GameLoop` (tick) vai para o M2, junto com o idle
-- [ ] `feat(ui)`: HUD em UI Toolkit (ouro, barra de progresso)
-- [ ] `feat(fx)`: juice v1 (faíscas, número flutuante, squash, shake no crítico)
-- [ ] `feat(editor)`: placeholder sprites + `Scenes/Build Workshop Scene` (versão mínima: bigorna + câmera)
-- [ ] `test`: Forge, Wallet, NumberFormatter
+- [x] `chore`: `.gitignore` Unity, `.gitattributes` (LFS + text), Force Text, README, CHANGELOG, CLAUDE.md
+- [x] `chore`: projeto Unity 6 LTS + URP 2D Renderer + Input System + Test Framework
+- [x] `feat(editor)`: `Setup/Create Folders`, `Setup/Configure Project`, asmdefs
+- [x] `feat(core)`: `GameState`, `Wallet`, `ForgeService` (golpe, crítico, conclusão), `IClock`/`IRandom`
+- [x] `feat(core)`: `NumberFormatter` (K, M, B...)
+- [x] `feat(data)`: SOs mínimos (arma, balanceamento, database) para não ter números mágicos no código
+- [x] `feat(runtime)`: `GameBootstrap` (composition root) + input da bigorna. O `GameLoop` (tick) vai para o M2, junto com o idle
+- [x] `feat(ui)`: HUD em UI Toolkit (ouro, barra de progresso)
+- [x] `feat(fx)`: juice v1 (faíscas, número flutuante, squash, shake no crítico)
+- [x] `feat(editor)`: placeholder sprites + `Scenes/Build Workshop Scene` (versão mínima: bigorna + câmera)
+- [x] `test`: Forge, Wallet, NumberFormatter
 
 **Pronto quando:** dá Play, cada click forja uma adaga de ferro, ela é vendida automaticamente e o ouro aparece formatado. Os testes passam.
 No M1 a venda é automática e só existe uma arma, porque balcão e catálogo vêm depois.
 
-## M2 — Economia, idle e persistência
+## M2 — Economia, idle e persistência ✅ (`v0.0.3`)
 **Meta:** o loop incremental de verdade, que sobrevive a fechar o jogo.
-- [ ] `feat(core)`: `EconomyFormulas` (custo geométrico, lote, máx)
-- [ ] `feat(core)`: `ModifierStack` + `UpgradeService` (martelos, forja, precisão)
-- [ ] `feat(core)`: `WorkforceService` (aprendizes, PF/s, marcos)
-- [ ] `feat(data)`: SOs `UpgradeDefinition`, `ApprenticeDefinition`, `GameBalanceConfig`, `GameDatabase` + `Data/Generate Sample Data`
-- [ ] `feat(ui)`: painel de upgrades e aprendizes (×1/×10/×100/Máx)
-- [ ] `feat(save)`: SaveSystem JSON versionado, escrita atômica, `.bak`, autosave
-- [ ] `feat(core)`: `OfflineProgressCalculator` + modal de resumo
-- [ ] `feat(editor)`: `Data/Validate Database`, `Save/*`, `Debug/Add Gold`
-- [ ] `test`: fórmulas, modificadores, save/migração, offline
-- [ ] `chore`: primeiro build WebGL (validar o save no IndexedDB)
+- [x] `feat(core)`: `EconomyFormulas` (custo geométrico, lote, máx)
+- [x] `feat(core)`: `ModifierStack` + `UpgradeService` (martelos, forja, precisão)
+- [x] `feat(core)`: `WorkforceService` (aprendizes, PF/s, marcos)
+- [x] `feat(data)`: SOs `UpgradeDefinition`, `ApprenticeDefinition`, `GameBalanceConfig`, `GameDatabase` + `Data/Generate Sample Data`
+- [x] `feat(ui)`: painel de upgrades e aprendizes (×1/×10/×100/Máx)
+- [x] `feat(save)`: SaveSystem JSON versionado, escrita atômica, `.bak`, autosave
+- [x] `feat(core)`: `OfflineProgressCalculator` + modal de resumo
+- [x] `feat(editor)`: `Data/Validate Database`, `Save/*`, `Debug/Add Gold`
+- [x] `test`: fórmulas, modificadores, save/migração, offline
+- [ ] `chore`: primeiro build WebGL (validar o save no IndexedDB). **Adiado para o início do M3**
 
 **Pronto quando:** dá para jogar 30 min, fechar, voltar e ver o resumo offline correto.
 

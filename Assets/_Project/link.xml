@@ -1,0 +1,7 @@
+<!--
+  Keeps code that is only reached through reflection in IL2CPP builds (WebGL):
+  Newtonsoft reads and writes GameState's fields by reflection when saving and loading.
+-->
+<linker>
+    <assembly fullname="AnvilClicker.Core" preserve="all" />
+</linker>

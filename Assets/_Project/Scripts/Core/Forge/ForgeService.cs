@@ -9,7 +9,7 @@ namespace AnvilClicker.Core
     public sealed class ForgeService
     {
         readonly GameState _state;
-        readonly IForgeBalance _balance;
+        readonly IForgeStats _stats;
         readonly IRandom _random;
 
         /// <summary>Raised after every strike, once its points have been applied.</summary>
@@ -21,19 +21,22 @@ namespace AnvilClicker.Core
         /// <summary>Raised with the new progress of the current weapon, in [0, 1).</summary>
         public event Action<double> ProgressChanged;
 
-        public ForgeService(GameState state, IForgeBalance balance, IWeaponCatalog catalog, IRandom random)
+        /// <param name="startingWeaponId">
+        /// Weapon used for a new game, or when the saved weapon no longer exists (its progress is then dropped).
+        /// </param>
+        public ForgeService(GameState state, IForgeStats stats, IWeaponCatalog catalog, string startingWeaponId, IRandom random)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));
-            _balance = balance ?? throw new ArgumentNullException(nameof(balance));
+            _stats = stats ?? throw new ArgumentNullException(nameof(stats));
             _random = random ?? throw new ArgumentNullException(nameof(random));
             if (catalog == null) throw new ArgumentNullException(nameof(catalog));
 
-            Guard.NonNegativeFinite(balance.BaseClickPower, nameof(balance.BaseClickPower));
-            Guard.PositiveFinite(balance.CritMultiplier, nameof(balance.CritMultiplier));
-
-            var weaponId = string.IsNullOrEmpty(state.ActiveWeaponId) ? balance.StartingWeaponId : state.ActiveWeaponId;
-            if (!catalog.TryGetWeapon(weaponId, out var weapon))
-                throw new InvalidOperationException($"Weapon '{weaponId}' was not found in the catalog.");
+            if (string.IsNullOrEmpty(state.ActiveWeaponId) || !catalog.TryGetWeapon(state.ActiveWeaponId, out var weapon))
+            {
+                if (!catalog.TryGetWeapon(startingWeaponId, out weapon))
+                    throw new InvalidOperationException($"Starting weapon '{startingWeaponId}' was not found in the catalog.");
+                if (!string.IsNullOrEmpty(state.ActiveWeaponId)) state.ForgeProgress = 0d;
+            }
             Guard.PositiveFinite(weapon.ForgePointsRequired, nameof(weapon.ForgePointsRequired));
 
             ActiveWeapon = weapon;
@@ -43,7 +46,7 @@ namespace AnvilClicker.Core
         public IWeaponDefinition ActiveWeapon { get; }
 
         /// <summary>Forge points added by a non-critical strike.</summary>
-        public double ClickPower => _balance.BaseClickPower;
+        public double ClickPower => _stats.ClickPower;
 
         public double Progress => _state.ForgeProgress;
 
@@ -53,8 +56,8 @@ namespace AnvilClicker.Core
 
         public StrikeResult Strike()
         {
-            var isCritical = _random.NextDouble() < _balance.CritChance;
-            var power = ClickPower * (isCritical ? _balance.CritMultiplier : 1d);
+            var isCritical = _random.NextDouble() < _stats.CritChance;
+            var power = ClickPower * (isCritical ? _stats.CritMultiplier : 1d);
 
             var completed = AddForgePoints(power);
 

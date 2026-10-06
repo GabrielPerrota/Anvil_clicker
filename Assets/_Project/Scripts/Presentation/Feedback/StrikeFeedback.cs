@@ -39,9 +39,14 @@ namespace AnvilClicker.Presentation
         [SerializeField] float textJitter = 0.35f;
         [Tooltip("{0} = gold earned.")]
         [SerializeField] string rewardFormat = "+{0} ouro";
+        [Tooltip("Earnings are grouped into one popup (and one chime) per interval, so apprentices finishing a weapon every frame don't flood the screen.")]
+        [SerializeField] float rewardInterval = 0.35f;
 
         GameContext _context;
         float _baseLightIntensity;
+        double _lastGold;
+        double _pendingReward;
+        float _sinceReward;
 
         public void Bind(GameContext context) => _context = context;
 
@@ -50,21 +55,25 @@ namespace AnvilClicker.Presentation
             if (forgeLight != null) _baseLightIntensity = forgeLight.intensity;
             if (_context == null) return;
 
+            _lastGold = _context.Wallet.Gold;
             _context.Forge.StrikeApplied += OnStrikeApplied;
-            _context.Forge.WeaponForged += OnWeaponForged;
+            _context.Wallet.GoldChanged += OnGoldChanged;
         }
 
         void OnDestroy()
         {
             if (_context == null) return;
             _context.Forge.StrikeApplied -= OnStrikeApplied;
-            _context.Forge.WeaponForged -= OnWeaponForged;
+            _context.Wallet.GoldChanged -= OnGoldChanged;
         }
 
         void Update()
         {
-            if (forgeLight == null) return;
-            forgeLight.intensity = Mathf.Lerp(forgeLight.intensity, _baseLightIntensity, 1f - Mathf.Exp(-lightRecovery * Time.deltaTime));
+            if (forgeLight != null)
+                forgeLight.intensity = Mathf.Lerp(forgeLight.intensity, _baseLightIntensity, 1f - Mathf.Exp(-lightRecovery * Time.deltaTime));
+
+            _sinceReward += Time.deltaTime;
+            if (_pendingReward > 0 && _sinceReward >= rewardInterval) FlushReward();
         }
 
         void OnStrikeApplied(StrikeResult result)
@@ -86,15 +95,26 @@ namespace AnvilClicker.Presentation
             }
         }
 
-        void OnWeaponForged(IWeaponDefinition weapon, long count)
+        /// <summary>Only increases count as earnings; spending in the shop lowers gold silently.</summary>
+        void OnGoldChanged(double gold)
         {
+            var delta = gold - _lastGold;
+            _lastGold = gold;
+            if (delta > 0) _pendingReward += delta;
+        }
+
+        void FlushReward()
+        {
+            var amount = _pendingReward;
+            _pendingReward = 0;
+            _sinceReward = 0f;
+
             if (sfx != null) sfx.PlayForged();
 
             if (floatingText != null)
             {
                 var origin = (strikePoint != null ? strikePoint.position : transform.position) + Vector3.up * 0.5f;
-                var text = string.Format(rewardFormat, NumberFormatter.Format(weapon.BaseValue * count));
-                floatingText.Show(origin, text, FloatingTextStyle.Reward);
+                floatingText.Show(origin, string.Format(rewardFormat, NumberFormatter.Format(amount)), FloatingTextStyle.Reward);
             }
         }
     }

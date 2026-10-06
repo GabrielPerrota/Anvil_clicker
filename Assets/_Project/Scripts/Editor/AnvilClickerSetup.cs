@@ -21,6 +21,7 @@ namespace AnvilClicker.Editor
             ProjectSetup.ConfigureProject();
             PlaceholderArtGenerator.Generate();
             SampleDataGenerator.Generate();
+            GameTools.ValidateDatabase();
             WorkshopSceneBuilder.BuildIfMissing();
 
             AssetDatabase.SaveAssets();

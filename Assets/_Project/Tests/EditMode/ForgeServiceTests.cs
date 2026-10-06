@@ -10,17 +10,19 @@ namespace AnvilClicker.Tests
         static readonly FakeWeapon Dagger = new FakeWeapon("dagger", forgePointsRequired: 10, baseValue: 5);
 
         GameState _state;
-        FakeBalance _balance;
+        FakeStats _stats;
+        string _startingWeaponId;
 
         [SetUp]
         public void SetUp()
         {
             _state = new GameState();
-            _balance = new FakeBalance();
+            _stats = new FakeStats();
+            _startingWeaponId = "dagger";
         }
 
         ForgeService CreateForge(IRandom random) =>
-            new ForgeService(_state, _balance, new FakeCatalog(Dagger), random);
+            new ForgeService(_state, _stats, new FakeCatalog(Dagger), _startingWeaponId, random);
 
         [Test]
         public void Constructor_UsesStartingWeaponForNewGame()
@@ -34,7 +36,7 @@ namespace AnvilClicker.Tests
         [Test]
         public void Constructor_UnknownWeapon_Throws()
         {
-            _balance.StartingWeaponId = "missing";
+            _startingWeaponId = "missing";
 
             Assert.Throws<InvalidOperationException>(() => CreateForge(new FakeRandom(0.99)));
         }
@@ -75,7 +77,7 @@ namespace AnvilClicker.Tests
         [Test]
         public void Strike_ZeroCritChance_NeverCrits()
         {
-            _balance.CritChance = 0;
+            _stats.CritChance = 0;
             var forge = CreateForge(new FakeRandom(0.0));
 
             Assert.That(forge.Strike().IsCritical, Is.False);
@@ -168,10 +170,32 @@ namespace AnvilClicker.Tests
             _state.ActiveWeaponId = "sword";
             _state.ForgeProgress = 15;
 
-            var forge = new ForgeService(_state, _balance, new FakeCatalog(Dagger, sword), new FakeRandom(0.99));
+            var forge = new ForgeService(_state, _stats, new FakeCatalog(Dagger, sword), _startingWeaponId, new FakeRandom(0.99));
 
             Assert.That(forge.ActiveWeapon, Is.SameAs(sword));
             Assert.That(forge.Progress01, Is.EqualTo(0.75).Within(1e-9));
+        }
+
+        [Test]
+        public void Constructor_SavedWeaponNoLongerExists_FallsBackToStartingWeaponAndDropsProgress()
+        {
+            _state.ActiveWeaponId = "removed_weapon";
+            _state.ForgeProgress = 7;
+
+            var forge = CreateForge(new FakeRandom(0.99));
+
+            Assert.That(forge.ActiveWeapon, Is.SameAs(Dagger));
+            Assert.That(forge.Progress, Is.EqualTo(0));
+            Assert.That(_state.ActiveWeaponId, Is.EqualTo("dagger"));
+        }
+
+        [Test]
+        public void Strike_UsesPowerFromStats()
+        {
+            _stats.ClickPower = 3;
+            var forge = CreateForge(new FakeRandom(0.99));
+
+            Assert.That(forge.Strike().Power, Is.EqualTo(3));
         }
     }
 }
